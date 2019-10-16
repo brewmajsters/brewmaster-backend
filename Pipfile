@@ -9,6 +9,7 @@ verify_ssl = true
 flask = "==1.1.*"
 flask-sqlalchemy = "==2.4.*"
 python-dotenv = "==0.10.*"
+paho-mqtt = "==1.4.*"
 
 [requires]
 python_version = "3.7"

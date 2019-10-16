@@ -1,6 +1,10 @@
 import datetime
+import json
 import logging
 from logging import Handler, Filter
+
+from flask import request
+
 from api import http_status
 import core.models
 from application import db
@@ -21,11 +25,20 @@ class DBFilter(Filter):
         if not hasattr(record, 'msg'):
             record.msg = 'No message provided'
 
-        record.time = datetime.datetime.now()
-        record.user_id = None
-        record.request_body = None
-        record.method = "None"
-        record.url = "cron"
+        if request:
+            record.request_body = (
+                None if
+                request.json is None
+                or request.json is b''
+                or request.json is b'{}'
+                else json.loads(request.json)
+            )
+            record.method = request.method
+            record.url = request.base_url
+        else:
+            record.request_body = None
+            record.method = "None"
+            record.url = "cron"
 
         return True
 
@@ -39,13 +52,14 @@ class DBHandler(Handler):
 
         notification = Notification(
             message=record.msg,
-            # method=record.method,
-            # url=record.url,
-            # module=record.module,
-            # function=record.funcName,
-            # level=record.levelname,
-            # status_code=record.status_code,
-            # additional_data=record.extra
+            request=record.request_body,
+            method=record.method,
+            url=record.url,
+            module=record.module,
+            function=record.funcName,
+            level=record.levelname,
+            status_code=record.status_code,
+            additional_data=record.extra
         )
         db.session.add(notification)
         db.session.commit()
