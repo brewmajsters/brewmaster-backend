@@ -1,4 +1,5 @@
 .idea/
 static/
 templates/
+/database.db
 .env
