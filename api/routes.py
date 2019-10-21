@@ -1,25 +1,18 @@
 """Routes for main pages."""
-import logging
-from flask import Blueprint, request
+from flask import Blueprint
 
-# Blueprint Configuration
-from api import http_status
-from core.errors import ApiException
+from application import mqtt_client
 
 blueprint = Blueprint('blueprint', __name__, template_folder='templates', static_folder='static')
 
 
-@blueprint.route('/', methods=['GET'])
-def hello_world():
-    return 'Hello World!'
+@blueprint.route('/subscribe/<string:name>/', methods=['GET'])
+def subscribe(name):
+    mqtt_client.subscribe(name)
+    return f'subscribed {name}'
 
 
-@blueprint.route('/log_test', methods=['GET'])
-def log_test():
-    logging.getLogger().error('test')
-    return 'Tested'
-
-
-@blueprint.route('/exception_test', methods=['GET'])
-def exception_test():
-    raise ApiException('Test exception', status_code=http_status.HTTP_403_FORBIDDEN)
+@blueprint.route('/publish/<string:name>/<string:message>/', methods=['GET'])
+def publish(name, message):
+    mqtt_client.publish(name, message)
+    return f'published to: {name} with message: {message}'

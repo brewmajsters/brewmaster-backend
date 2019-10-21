@@ -1,8 +1,9 @@
 """Initialize app."""
 from flask import Flask
-from flask_sqlalchemy import SQLAlchemy
+from core.models.base_model import db
+from mqtt.client import MqttClient
 
-db = SQLAlchemy()
+mqtt_client = MqttClient()
 
 
 def create_app():
@@ -11,15 +12,17 @@ def create_app():
 
     # Application Configuration
     app.config.from_object('settings.development.DevelopmentConfig')
-    db.init_app(app)
 
     with app.app_context():
         # Import parts of our application
         from api import routes
         from core.handlers.db_handler import init_logger
-
         # Create routes
         app.register_blueprint(routes.blueprint)
+
+        db.init_app(app)
+        mqtt_client.init(app)
+        mqtt_client.connect()
 
         # Create tables for our models
         db.create_all()
@@ -27,4 +30,4 @@ def create_app():
         # Initializing logger
         init_logger()
 
-        return app
+    return app

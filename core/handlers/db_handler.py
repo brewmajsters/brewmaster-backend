@@ -4,7 +4,7 @@ from logging import Handler, Filter
 from flask import request
 from api import http_status
 import core.models
-from application import db
+from core.models.base_model import db
 
 
 class DBFilter(Filter):
