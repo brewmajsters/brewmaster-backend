@@ -46,10 +46,7 @@ class MqttClient(object):
         m_decode = str(msg.payload.decode('utf-8'))
 
         with self.app.app_context():
-            Sensor(
-                name=topic,
-                message=m_decode
-            ).save()
+            Sensor(name=topic, message=m_decode).create()
         logging.info(f'Message received: {m_decode}')
 
     def connect(self):
