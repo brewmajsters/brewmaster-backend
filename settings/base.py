@@ -7,12 +7,12 @@ class BaseConfig(object):
 
     DEBUG = False
     TESTING = False
-    BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    BASE_DIR = os.path.abspath(os.path.dirname(__file__))
     SERVER_HOST = '127.0.0.1'
     DB_NAME = 'database.db'
     SECRET_KEY = 'Lz176a9Vr18E4JobEZdkpoExE6VEhu0M'
 
     # DB SETTINGS
 
-    SQLALCHEMY_DATABASE_URI = 'sqlite:///' + BASE_DIR + '/' + DB_NAME
+    SQLALCHEMY_DATABASE_URI = os.getenv('DATABASE_HOST')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
