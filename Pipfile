@@ -9,7 +9,6 @@ verify_ssl = true
 flask = "==1.1.*"
 psycopg2 = "==2.8.*"
 flask-sqlalchemy = "==2.4.*"
-flask-migrate = "==2.5.*"
 python-dotenv = "==0.10.*"
 paho-mqtt = "==1.4.*"
 
