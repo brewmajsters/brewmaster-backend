@@ -1,7 +1,3 @@
-from sqlalchemy import DDL, event
-from core.models.base_model import db
-
-
 # class BaseTimeScaleModel():
 #     __abstract__ = True
 #     __tablename__ = 'sensors'

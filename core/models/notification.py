@@ -1,5 +1,5 @@
 from sqlalchemy import types
-from core.models.base_model import BaseModel, db
+from core.models.abstract.base_model import BaseModel, db
 
 
 class Notification(BaseModel):

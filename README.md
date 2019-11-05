@@ -1,7 +1,10 @@
 # brewmaster-backend
 Backend for brewmaster project.
 
-## Migrácie
+## Installation
+This section describes setup requirements to run this project.
 
-- Vytvorenie migrácií: `python manage.py db init`
-- Spustenie migrácií: `python manage.py db migrate`
+### Setup timescale for postgres
+1. aaa
+2. aaa
+3. aaa

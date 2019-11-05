@@ -1,11 +1,9 @@
 import datetime
-
 from psycopg2._psycopg import DatabaseError
 from sqlalchemy import event, DDL
-
 from api import http_status
 from api.errors import ApiException
-from core.models.base_model import db
+from core.models.abstract.base_model import db
 
 
 class Sensor(db.Model):

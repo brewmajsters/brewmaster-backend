@@ -1,6 +1,6 @@
 """Initialize app."""
 from flask import Flask
-from core.models.base_model import db
+from core.models.abstract.base_model import db
 from mqtt.client import MqttClient
 
 mqtt_client = MqttClient()
