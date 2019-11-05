@@ -20,4 +20,8 @@ def publish(name, message):
 
 @blueprint.route('/test', methods=['GET'])
 def test():
-    raise ApiException("Tvoja manka")
+    name = "mqqt"
+    message = "tvoja manka"
+    mqtt_client.subscribe(name)
+    mqtt_client.publish(name, message)
+    return f'published to: {name} with message: {message}'
