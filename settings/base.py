@@ -6,7 +6,7 @@ class BaseConfig(object):
     app = Flask(__name__)
 
     DB_URL = f"postgresql+psycopg2://{os.getenv('DATABASE_USER')}:{os.getenv('DATABASE_PASSWORD')}" \
-             f"@{os.getenv('DATABASE_HOST')}/{os.getenv('DATABASE_NAME')}"
+             f"@{os.getenv('DATABASE_HOST')}:{os.getenv('DATABASE_PORT')}/{os.getenv('DATABASE_NAME')}"
 
     DEBUG = False
     TESTING = False

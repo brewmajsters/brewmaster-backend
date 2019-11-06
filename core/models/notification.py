@@ -1,8 +1,9 @@
 from sqlalchemy import types
-from core.models.abstract.base_model import BaseModel, db
+from core.models.abstract.base_model import db
+from core.models.abstract.standard_model import StandardModel
 
 
-class Notification(BaseModel):
+class Notification(StandardModel):
     __tablename__ = 'notifications'
 
     message = db.Column(db.String(100), nullable=True)
