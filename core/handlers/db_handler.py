@@ -63,20 +63,28 @@ class DBHandler(Handler):
 
 
 def init_logger():
-    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-
-    logger = logging.getLogger()
+    # Create a custom logger
+    logger = logging.getLogger('root_logger')
     logger.setLevel('INFO')
 
+    # Create handlers
     data_log = DBHandler()
-    data_log.setLevel('WARNING')
+    output_log = logging.StreamHandler()
+
+    data_log.setLevel(logging.WARNING)
+    output_log.setLevel(logging.DEBUG)
+
     data_log.addFilter(DBFilter())
 
-    output_log = logging.StreamHandler()
-    output_log.setLevel(logging.DEBUG)
+    # Create formatters and add it to handlers
+    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
     data_log.setFormatter(formatter)
     output_log.setFormatter(formatter)
 
+    # Add handlers to the logger
     logger.addHandler(data_log)
     logger.addHandler(output_log)
+
+    logger = logging.getLogger()
+    logger.setLevel('INFO')

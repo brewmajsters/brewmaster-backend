@@ -21,7 +21,7 @@ class ApiException(Exception):
         if extra:
             self._extra.update(extra)
 
-        logging.getLogger().error(self.message, extra={"extra": self._extra})
+        logging.getLogger('root_logger').error(self.message, extra={"extra": self._extra})
 
     @property
     def status_code(self) -> int:
