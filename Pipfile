@@ -13,6 +13,7 @@ python-dotenv = "==0.10.*"
 paho-mqtt = "==1.4.*"
 flask-socketio = "*"
 eventlet = "*"
+io-blueprint = "*"
 
 [requires]
 python_version = "3.7"

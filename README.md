@@ -3,11 +3,11 @@ Backend for brewmaster project.
 
 ## Installation
 
-### Recommended requirements:
+### Requirements:
 
 - [Python 3.7](https://www.python.org/downloads/)
 - [Pipenv](https://github.com/pypa/pipenv)
-- [PostgreSQL 11.5](https://www.postgresql.org/download/)
+- [PostgreSQL](https://www.postgresql.org/download/) (recommended version 11.5)
 - [Git](https://git-scm.com/downloads)
 
 ### Downloading code base
@@ -25,6 +25,7 @@ pipenv install
 
 - In project root is located file `.env.example`.
 - Rename this file to `.env`.
+- Configure variables in `.env` file according to your needs.
 
 ### Setup postgres DB with timescale extension
 1. Download [PostgreSQL](https://www.postgresql.org/download/) (Our tested and working Postgresql server with timescale extension is version 11.5).
@@ -40,6 +41,12 @@ pipenv install
 > **WARNING**: During installation on Windows platform creating database extension raised error: 
 > `ERROR: could not load library "C:/Program Files/PostgreSQL/11/lib/timescaledb-1.5.0.dll": The specified module could not be found.`
 > Issue was resolved on [Github](https://github.com/timescale/timescaledb/issues/1398).
+
+### Project startup
+
+1. Activate environment `pipenv shell`.
+2. Run download dependencies from pipfile `pipenv update`.
+3. Run command in project root `python wsgi.py`.
 
 ## Implementation and Maintaining
 

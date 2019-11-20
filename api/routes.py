@@ -1,8 +1,7 @@
 """Routes for main pages."""
-from flask import Blueprint
-
-from application import mqtt_client
 from core.models import Module
+from flask import Blueprint, render_template
+from mqtt.client import mqtt_client
 
 blueprint = Blueprint('blueprint', __name__, template_folder='templates', static_folder='static')
 
@@ -27,3 +26,8 @@ def test():
     mqtt_client.subscribe(name)
     mqtt_client.publish(name, message)
     return f'published to: {name} with message: {message}'
+
+
+@blueprint.route('/test_web', methods=['GET'])
+def test_web():
+    return render_template('test.html')

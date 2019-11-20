@@ -1,9 +1,9 @@
 from flask import Flask
-from flask_socketio import SocketIO
-from core.models.abstract.base_model import db
-from mqtt.client import MqttClient
-
-mqtt_client = MqttClient()
+from api import routes
+from api.events import socketio
+from core.handlers.db_handler import init_logger
+from core.models.abstract.base_model import db, initialize_db
+from mqtt.client import mqtt_client
 
 
 def create_app():
@@ -13,23 +13,16 @@ def create_app():
     # Application Configuration
     app.config.from_object('settings.development.DevelopmentConfig')
 
-    with app.app_context():
-        # Import parts of our application
-        from api import routes
-        from core.handlers.db_handler import init_logger
-        # Create routes
-        app.register_blueprint(routes.blueprint)
+    # Create routes
+    app.register_blueprint(routes.blueprint)
 
-        db.init_app(app)
-        mqtt_client.init(app)
-        socketio = SocketIO(app)
+    mqtt_client.init(app)
+    socketio.init_app(app)
+    initialize_db(app)
 
-        # Create tables for our models
-        db.create_all()
+    # Initializing logger
+    init_logger()
 
-        # Initializing logger
-        init_logger()
+    mqtt_client.connect()
 
-        mqtt_client.connect()
-
-    return app, socketio
+    return app

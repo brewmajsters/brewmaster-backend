@@ -1,9 +1,12 @@
 """App entry point."""
-from application import create_app
+import eventlet
+from application import create_app, socketio
 
-app, socketio = create_app()
+app = create_app()
 
 if __name__ == "__main__":
+    eventlet.monkey_patch()
+
     socketio.run(
         app,
         host=app.config['SERVER_HOST'],

@@ -4,7 +4,6 @@ from logging import Handler, Filter
 from flask import request
 from api import http_status
 import core.models
-from core.models.abstract.base_model import db
 
 
 class DBFilter(Filter):
@@ -47,7 +46,7 @@ class DBHandler(Handler):
         except core.models.notification.Notification.DoesNotExist:
             from core.models import Notification
 
-        notification = Notification(
+        Notification(
             message=record.msg,
             request=record.request_body,
             method=record.method,
@@ -57,9 +56,7 @@ class DBHandler(Handler):
             level=record.levelname,
             status_code=record.status_code,
             additional_data=record.extra
-        )
-        db.session.add(notification)
-        db.session.commit()
+        ).create()
 
 
 def init_logger():

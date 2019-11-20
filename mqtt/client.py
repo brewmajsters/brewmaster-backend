@@ -1,8 +1,5 @@
 import logging
 import os
-import random
-import string
-
 import paho.mqtt.client as mqtt
 from paho.mqtt import MQTTException
 from core.models import Sensor
@@ -16,7 +13,7 @@ class MqttClient(object):
         self.broker_port = None
         self.keep_alive = 60
 
-        self.client = mqtt.Client(os.getenv('MQTT_CLIENT_NAME'))
+        self.client = mqtt.Client(client_id=os.getenv('MQTT_CLIENT_NAME'))
 
     def init(self, app):
         self.broker_host = os.getenv('BROKER_HOST')
@@ -68,3 +65,6 @@ class MqttClient(object):
 
     def publish(self, name, message):
         self.client.publish(name, message)
+
+
+mqtt_client = MqttClient()
