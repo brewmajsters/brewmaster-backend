@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from datetime import datetime
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.exc import DatabaseError
@@ -7,6 +8,7 @@ from api.errors import ApiException
 db = SQLAlchemy()
 
 
+@dataclass
 class BaseModel(db.Model):
     __abstract__ = True
 
