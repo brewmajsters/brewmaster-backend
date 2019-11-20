@@ -11,6 +11,8 @@ psycopg2 = "==2.8.*"
 flask-sqlalchemy = "==2.4.*"
 python-dotenv = "==0.10.*"
 paho-mqtt = "==1.4.*"
+flask-socketio = "*"
+eventlet = "*"
 
 [requires]
 python_version = "3.7"

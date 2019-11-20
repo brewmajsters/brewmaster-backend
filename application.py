@@ -1,5 +1,5 @@
-"""Initialize app."""
 from flask import Flask
+from flask_socketio import SocketIO
 from core.models.abstract.base_model import db
 from mqtt.client import MqttClient
 
@@ -22,7 +22,7 @@ def create_app():
 
         db.init_app(app)
         mqtt_client.init(app)
-        mqtt_client.connect()
+        socketio = SocketIO(app)
 
         # Create tables for our models
         db.create_all()
@@ -30,4 +30,6 @@ def create_app():
         # Initializing logger
         init_logger()
 
-    return app
+        mqtt_client.connect()
+
+    return app, socketio
