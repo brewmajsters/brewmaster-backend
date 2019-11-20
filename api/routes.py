@@ -1,6 +1,8 @@
 """Routes for main pages."""
 from flask import Blueprint
+
 from application import mqtt_client
+from core.models import Module
 
 blueprint = Blueprint('blueprint', __name__, template_folder='templates', static_folder='static')
 
@@ -19,6 +21,7 @@ def publish(name, message):
 
 @blueprint.route('/test', methods=['GET'])
 def test():
+    xyz = Module.query.first()
     name = "mqqt"
     message = "tvoja manka"
     mqtt_client.subscribe(name)
