@@ -1,6 +1,4 @@
 .idea/
-static/
-templates/
 /database.db
 .env
 __pycache__
