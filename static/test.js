@@ -19,5 +19,6 @@ $(document).ready(function() {
             numbers_string = numbers_string + '<p>' + numbers_received[i].toString() + '</p>';
         }
         $('#log').html(numbers_string);
+        socket.emit('callback', 'ok');
     });
 });

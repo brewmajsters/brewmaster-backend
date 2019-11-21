@@ -1,8 +1,8 @@
 from flask import Flask
 from api import routes
-from api.events import socketio
+from web_socket.events import socketio
 from core.handlers.db_handler import init_logger
-from core.models.abstract.base_model import db, initialize_db
+from core.models.abstract.base_model import initialize_db
 from mqtt.client import mqtt_client
 
 
@@ -16,13 +16,16 @@ def create_app():
     # Create routes
     app.register_blueprint(routes.blueprint)
 
-    mqtt_client.init(app)
-    socketio.init_app(app)
+    # Initializing database
     initialize_db(app)
 
     # Initializing logger
     init_logger()
 
+    # Initializing mqtt
+    mqtt_client.init(app, socketio)
     mqtt_client.connect()
 
+    # Initializing socketio
+    socketio.init_app(app)
     return app
