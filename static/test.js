@@ -4,21 +4,36 @@ $(document).ready(function() {
         'http://' + document.domain + ':' + location.port + '/test_web_socket',
         {transports: ['websocket', 'polling', 'flashsocket']}
     );
-    var numbers_received = [];
+    var heater_numbers_received = [];
+    var pressure_numbers_received = [];
 
     //receive details from server
-    socket.on('new_number', function (msg) {
+    socket.on('heater', function (msg) {
         console.log("Received number" + msg.number);
         //maintain a list of ten numbers
-        if (numbers_received.length >= 10) {
-            numbers_received.shift()
+        if (heater_numbers_received.length >= 10) {
+            heater_numbers_received.shift()
         }
-        numbers_received.push(msg.number);
-        numbers_string = '';
-        for (var i = 0; i < numbers_received.length; i++) {
-            numbers_string = numbers_string + '<p>' + numbers_received[i].toString() + '</p>';
+        heater_numbers_received.push(msg.number);
+        heater_numbers_string = '';
+        for (var i = 0; i < heater_numbers_received.length; i++) {
+            heater_numbers_string = heater_numbers_string + '<p>' + heater_numbers_received[i].toString() + '</p>';
         }
-        $('#log').html(numbers_string);
+        $('#heater').html(heater_numbers_string);
+        socket.emit('callback', 'ok');
+    });
+    socket.on('pressure', function (msg) {
+        console.log("Received number" + msg.number);
+        //maintain a list of ten numbers
+        if (pressure_numbers_received.length >= 10) {
+            pressure_numbers_received.shift()
+        }
+        pressure_numbers_received.push(msg.number);
+        pressure_numbers_string = '';
+        for (var i = 0; i < pressure_numbers_received.length; i++) {
+            pressure_numbers_string = pressure_numbers_string + '<p>' + pressure_numbers_received[i].toString() + '</p>';
+        }
+        $('#pressure').html(pressure_numbers_string);
         socket.emit('callback', 'ok');
     });
 });

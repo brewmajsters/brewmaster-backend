@@ -4,7 +4,7 @@ from mqtt.sensor import Sensor
 
 
 socketio = SocketIO(async_mode="eventlet")
-sensors = [Sensor('heater', socketio)]
+sensors = [Sensor('heater', socketio), Sensor('pressure', socketio)]
 
 
 @socketio.on('connect', namespace='/test_web_socket')

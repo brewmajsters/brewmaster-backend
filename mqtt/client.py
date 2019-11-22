@@ -17,7 +17,7 @@ class MqttClient(object):
         self.broker_port = None
         self.keep_alive = 60
         self.granularity = 5
-        self.time = 0
+        self.time = {}
 
         self.client = mqtt.Client(client_id=os.getenv('MQTT_CLIENT_NAME'))
 
@@ -57,14 +57,16 @@ class MqttClient(object):
         float_message = float(msg.payload.decode('utf-8'))
 
         with self.app.app_context():
-            self.socketio.emit('new_number',  {'number': float_message}, namespace='/test_web_socket')
+            self.socketio.emit(topic,  {'number': float_message}, namespace='/test_web_socket')
             logging.getLogger('root_logger').info(f'[SocketIO]: Sent message: {string_message} to client.')
 
-            if self.time >= self.granularity:
+            if not topic in self.time:
+                self.time[topic] = 0
+            if self.time.get(topic) >= self.granularity:
                 logging.getLogger('root_logger').info(f'[PostgreSQL]: Created sensor instance: {topic}')
                 Sensor(name=topic, message=string_message).create()
-                self.time = 0
-        self.time += 1
+                self.time[topic] = 0
+        self.time[topic] += 1
         logging.getLogger('root_logger').info(f'[MQTT]: Message received: {string_message}')
 
     def connect(self):
