@@ -22,7 +22,7 @@ def on_disconnect():
     logging.getLogger('root_logger').info(f'[SocketIO]: Client successfully disconnected.')
 
     for sensor in sensors:
-        sensor.run()
+        sensor.stop()
 
 
 @socketio.on('callback', namespace='/test_web_socket')
