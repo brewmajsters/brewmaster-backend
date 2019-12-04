@@ -1,6 +1,8 @@
 from datetime import datetime
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.exc import DatabaseError
+from sqlalchemy.orm.exc import MultipleResultsFound, NoResultFound
+
 from api import http_status
 from api.errors import ApiException
 
@@ -15,6 +17,14 @@ def initialize_db(app):
 
 class BaseModel(db.Model):
     __abstract__ = True
+
+    def get(self, **kwargs):
+        try:
+            return self.query().filter_by(**kwargs).first()
+        except MultipleResultsFound:
+            raise ApiException('aaa')
+        except NoResultFound:
+            raise ApiException('bbb')
 
     def create(self):
         try:

@@ -15,3 +15,14 @@ class Notification(StandardModel):
     status_code = db.Column(db.Integer, nullable=True)
     request = db.Column(types.JSON(), nullable=True)
     additional_data = db.Column(types.JSON(), nullable=True)
+
+    def __init__(self, message, method, url, module, function, level, status_code, request, additional_data):
+        self.message = message
+        self.method = method
+        self.url = url
+        self.module = module
+        self.function = function
+        self.level = level
+        self.status_code = status_code
+        self.request = request
+        self.additional_data = additional_data

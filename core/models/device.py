@@ -5,7 +5,7 @@ from core.models.abstract.standard_model import StandardModel
 class Device(StandardModel):
     __tablename__ = 'devices'
 
-    fk_module = db.Column(db.Integer, db.ForeignKey('modules.pk_id'))
+    fk_module = db.Column(db.Integer, db.ForeignKey('modules.id'))
     module = db.relationship("Module", back_populates="devices")
 
     gpios = db.relationship("Gpio", back_populates="device")

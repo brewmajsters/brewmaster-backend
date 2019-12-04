@@ -8,7 +8,7 @@ import core.models
 
 class DBFilter(Filter):
     def filter(self, record):
-        if hasattr(record, 'extra'):
+        if hasattr(record, 'extra') and record.extra is not None:
             status_code = record.extra.get('status_code')
             if status_code:
                 record.status_code = status_code
