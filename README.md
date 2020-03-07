@@ -56,7 +56,7 @@ pipenv install
 2. Run the container from newly created image:
     - available environment variables: `TIMESCALEDB_HOST` `TIMESCALEDB_PORT` `TIMESCALEDB_NAME` `TIMESCALEDB_USER` `TIMESCALEDB_PASSWORD`
     - retrieve the timescaldb docker instance ip address: `docker inspect <TIMESCALEDB-DOCKER-ID> | jq -r '.[0].NetworkSettings.Networks.bridge.IPAddress'`
-    - e.g. `docker run -d --name backend -e TIMESCALEDB_HOST=<IP> -e TIMESCALEDB_PASSWORD=<PASSWD> backend`
+    - e.g. `docker run -d --name backend -p 5000:5000 -e TIMESCALEDB_HOST=<IP> -e TIMESCALEDB_PASSWORD=<PASSWD> backend`
 
 ## Implementation and Maintaining
 
