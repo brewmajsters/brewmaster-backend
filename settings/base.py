@@ -7,7 +7,8 @@ class BaseConfig(object):
     from pathlib import Path
 
     app = Flask(__name__)
-    env_path = Path('.') / '.env'
+    BASE_DIR = os.path.abspath(os.path.dirname(__file__))
+    env_path = Path(BASE_DIR) / '.env'
 
     load_dotenv(dotenv_path=env_path)
 
@@ -17,7 +18,6 @@ class BaseConfig(object):
     DEBUG = False
     TESTING = False
     FLASK_ENV = 'development'
-    BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 
     SERVER_HOST = os.getenv('SERVER_HOST')
     SERVER_PORT = os.getenv('SERVER_PORT')
