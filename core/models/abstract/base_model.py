@@ -1,6 +1,8 @@
 from datetime import datetime
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.exc import DatabaseError
+from sqlalchemy.orm.exc import MultipleResultsFound, NoResultFound
+
 from api import http_status
 from api.errors import ApiException
 
@@ -16,6 +18,22 @@ def initialize_db(app):
 class BaseModel(db.Model):
     __abstract__ = True
 
+    def get(self, **kwargs):
+        try:
+            return self.query().filter_by(**kwargs).first()
+        except MultipleResultsFound as e:
+            raise ApiException(
+                f'Multiple results found.',
+                status_code=http_status.HTTP_503_SERVICE_UNAVAILABLE,
+                previous=e
+            )
+        except NoResultFound as e:
+            raise ApiException(
+                f'No result found.',
+                status_code=http_status.HTTP_503_SERVICE_UNAVAILABLE,
+                previous=e
+            )
+
     def create(self):
         try:
             db.session.add(self)
@@ -23,7 +41,7 @@ class BaseModel(db.Model):
         except DatabaseError as e:
             db.session.rollback()
             raise ApiException(
-                f'Vyskytla sa chyba pri vytvorení záznamu: {self}.',
+                f'There was an error creating the record: {self}.',
                 status_code=http_status.HTTP_503_SERVICE_UNAVAILABLE,
                 previous=e
             )
@@ -36,7 +54,7 @@ class BaseModel(db.Model):
         except DatabaseError as e:
             db.session.rollback()
             raise ApiException(
-                f'Vyskytla sa chyba pri upravení záznamu: {self}.',
+                f'There was an error updating the record: {self}.',
                 status_code=http_status.HTTP_503_SERVICE_UNAVAILABLE,
                 previous=e
             )
@@ -47,7 +65,7 @@ class BaseModel(db.Model):
             db.session.commit()
         except DatabaseError as e:
             raise ApiException(
-                f'Vyskytla sa chyba pri vymazaní záznamu: {self}.',
+                f'There was an error deleting the record: {self}.',
                 status_code=http_status.HTTP_503_SERVICE_UNAVAILABLE,
                 previous=e
             )

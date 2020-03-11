@@ -15,3 +15,8 @@
 ## 0.3.1: 04.12.2019
 
 - **Fix**: Changed sensor.run() to sensor.stop() on disconnect client from socketio.
+
+## 0.4.0: 25.02.2020
+
+- **Feature**: Implemented basic unit tests via pytest.
+- **Fix**: Changed language to raised exception messages.

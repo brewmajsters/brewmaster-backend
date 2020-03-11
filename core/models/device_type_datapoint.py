@@ -10,5 +10,5 @@ class DeviceTypeDatapoint(StandardModel):
     datapoint_code = db.Column(db.String(100), nullable=True)
     writable = db.Column(db.Boolean, nullable=True)
 
-    fk_module_device_type = db.Column(db.Integer, db.ForeignKey('module_device_types.pk_id'))
+    fk_module_device_type = db.Column(db.Integer, db.ForeignKey('module_device_types.id'))
     module_device_type = db.relationship("ModuleDeviceType")

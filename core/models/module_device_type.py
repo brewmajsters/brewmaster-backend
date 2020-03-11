@@ -9,5 +9,5 @@ class ModuleDeviceType(StandardModel):
     model = db.Column(db.String(100), nullable=True)
     module_type_code = db.Column(db.String(100), nullable=True)
 
-    fk_protocol = db.Column(db.Integer, db.ForeignKey('protocols.pk_id'))
+    fk_protocol = db.Column(db.Integer, db.ForeignKey('protocols.id'))
     protocol = db.relationship("Protocol")

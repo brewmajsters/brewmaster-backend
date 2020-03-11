@@ -8,6 +8,6 @@ class ModbusRtu(StandardModel):
     unit_id = db.Column(db.String(100), nullable=True)
     pull_rate = db.Column(db.String(100), nullable=True)
 
-    fk_device = db.Column(db.Integer, db.ForeignKey('devices.pk_id'))
+    fk_device = db.Column(db.Integer, db.ForeignKey('devices.id'))
 
     device = db.relationship("Device", back_populates="modbus_rtus")
