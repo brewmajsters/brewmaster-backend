@@ -12,7 +12,7 @@ Backend for brewmaster project.
 
 ### Downloading code base
 
-The Git installation example below will download the codebase project and run the pipenv install. Pipenv 
+The Git installation example below will download the codebase project and run the pipenv install. Pipenv
 will create a virtual environment in which will install all project dependencies.
 
 ```
@@ -33,12 +33,12 @@ pipenv install
 3. Download [TimeScaleDB](https://docs.timescale.com/latest/getting-started/installation) extension for Postgresql.
 4. Install TimeScaleDB according to manual on official web page.
 5. Add TimeScale extension to installed Postgresql server.
-   1. Connect to Postgresql server via CMD: `psql -U postgres -h host -p port` 
+   1. Connect to Postgresql server via CMD: `psql -U postgres -h host -p port`
    2. Create new database: `CREATE database tutorial;`
    3. Connect to created database: `\c tutorial`
    4. Create TimescaleDB extension to specified database: `CREATE EXTENSION IF NOT EXISTS timescaledb CASCADE;`
 
-> **WARNING**: During installation on Windows platform creating database extension raised error: 
+> **WARNING**: During installation on Windows platform creating database extension raised error:
 > `ERROR: could not load library "C:/Program Files/PostgreSQL/11/lib/timescaledb-1.5.0.dll": The specified module could not be found.`
 > Issue was resolved on [Github](https://github.com/timescale/timescaledb/issues/1398).
 
@@ -47,6 +47,16 @@ pipenv install
 1. Activate environment `pipenv shell`.
 2. Run download dependencies from pipfile `pipenv update`.
 3. Run command in project root `python wsgi.py`.
+
+#### Dockerfile startup
+
+**DEPENDENCY:** Running TimescaleDB instance as docker: [guide](https://github.com/brewmajsters/timescaledb-docker)
+
+1. Build from the Dockerfile: `docker build -t backend:latest .`
+2. Run the container from newly created image:
+    - available environment variables: `TIMESCALEDB_HOST` `TIMESCALEDB_PORT` `TIMESCALEDB_NAME` `TIMESCALEDB_USER` `TIMESCALEDB_PASSWORD`
+    - retrieve the timescaldb docker instance ip address: `docker inspect <TIMESCALEDB-DOCKER-ID> | jq -r '.[0].NetworkSettings.Networks.bridge.IPAddress'`
+    - e.g. `docker run -d --name backend -p 5000:5000 -e TIMESCALEDB_HOST=<IP> -e TIMESCALEDB_PASSWORD=<PASSWD> backend`
 
 ## Implementation and Maintaining
 
@@ -57,8 +67,8 @@ pipenv install
     - Communication with PostgreSQL DB.
     - Communication through MQTT.
     - Communication through Web Sockets.
-    
-- We use strict code-style according to [PEP8](https://www.python.org/dev/peps/pep-0008/) 
+
+- We use strict code-style according to [PEP8](https://www.python.org/dev/peps/pep-0008/)
 and we are using for maintaining codebase technique git-flow.
     - **master** branch always contains stable version of source code.
     - **develop** branch containing changes implemented in specific sprint.
