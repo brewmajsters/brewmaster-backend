@@ -1,4 +1,5 @@
 from flask import Flask
+from flask_cors import CORS
 from api import routes
 from web_socket.events import socketio
 from core.handlers.db_handler import init_logger
@@ -12,6 +13,9 @@ def create_app():
 
     # Application Configuration
     app.config.from_object('settings.development.DevelopmentConfig')
+
+    # Create CORS
+    CORS(app)
 
     # Create routes
     app.register_blueprint(routes.blueprint)

@@ -7,10 +7,12 @@ class BaseConfig(object):
     from pathlib import Path
 
     app = Flask(__name__)
-    BASE_DIR = os.path.abspath(os.path.dirname(__file__))
-    env_path = Path(BASE_DIR) / '.env'
 
-    load_dotenv(dotenv_path=env_path)
+    PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
+    BASE_DIR = os.path.dirname(PROJECT_ROOT)
+    ENV_PATH = Path(BASE_DIR) / '.env'
+
+    load_dotenv(dotenv_path=ENV_PATH)
 
     DB_URL = f"postgresql+psycopg2://{os.getenv('DATABASE_USER')}:{os.getenv('DATABASE_PASSWORD')}" \
              f"@{os.getenv('DATABASE_HOST')}:{os.getenv('DATABASE_PORT')}/{os.getenv('DATABASE_NAME')}"

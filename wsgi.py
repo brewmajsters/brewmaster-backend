@@ -1,4 +1,3 @@
-"""App entry point."""
 import eventlet
 from application import create_app, socketio
 
