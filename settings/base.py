@@ -10,7 +10,7 @@ class BaseConfig(object):
 
     PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
     BASE_DIR = os.path.dirname(PROJECT_ROOT)
-    ENV_PATH = Path(BASE_DIR) / '.env'
+    ENV_PATH = Path(PROJECT_ROOT) / '..' / '.env'
 
     load_dotenv(dotenv_path=ENV_PATH)
 
