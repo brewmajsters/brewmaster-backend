@@ -7,5 +7,8 @@
 [ -z $TIMESCALEDB_USER ] || sed -i "s/DATABASE_USER=postgres/DATABASE_USER=$TIMESCALEDB_USER/g" ./.env
 [ -z $TIMESCALEDB_PASSWORD ] || sed -i "s/DATABASE_PASSWORD=123456/DATABASE_PASSWORD=$TIMESCALEDB_PASSWORD/g" ./.env
 
+# temporarily statically set the serve host to 0.0.0.0
+sed -i "s/SERVER_HOST=127.0.0.1/SERVER_HOST=0.0.0.0/g" ./.env
+
 # run the backend
 $(pipenv --py) ./wsgi.py
