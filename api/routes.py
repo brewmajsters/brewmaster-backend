@@ -1,3 +1,5 @@
+import json
+
 from flask import Blueprint, render_template
 from mqtt.client import mqtt_client
 
@@ -16,3 +18,10 @@ def test_mqtt():
 @blueprint.route('/test_web', methods=['GET'])
 def test_all():
     return render_template('test.html')
+
+
+@blueprint.route('/test_cors', methods=['GET'])
+def test_cors():
+    return json.dumps(
+        {'success': True}
+    ), 200, {'ContentType': 'application/json'}
