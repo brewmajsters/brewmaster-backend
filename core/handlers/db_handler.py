@@ -1,5 +1,6 @@
 import json
 import logging
+import uuid
 from logging import Handler, Filter
 from flask import request
 from api import http_status
@@ -24,10 +25,10 @@ class DBFilter(Filter):
         if request:
             record.request_body = (
                 None if
-                request.json is None
-                or request.json is b''
-                or request.json is b'{}'
-                else json.loads(request.json)
+                request.data is None
+                or request.data is b''
+                or request.data is b'{}'
+                else json.loads(request.data)
             )
             record.method = request.method
             record.url = request.base_url

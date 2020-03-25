@@ -1,5 +1,20 @@
 import logging
+from flask import jsonify
 from api import http_status
+
+
+def register_error_handlers(app):
+    @app.errorhandler(ApiException)
+    def handle_invalid_usage(error):
+        response = jsonify(error.payload)
+        response.status_code = error.status_code
+        return response
+
+    @app.errorhandler(ValidationException)
+    def handle_invalid_usage(error):
+        response = jsonify(error.payload)
+        response.status_code = error.status_code
+        return response
 
 
 class ApiException(Exception):
@@ -49,3 +64,18 @@ class ApiException(Exception):
             result['details'] = self.details
 
         return result
+
+
+class ValidationException(Exception):
+    def __init__(self, errors):
+        super().__init__('Validation error')
+        self._errors = errors
+        self._status_code: int = http_status.HTTP_400_BAD_REQUEST
+
+    @property
+    def status_code(self) -> int:
+        return self._status_code
+
+    @property
+    def payload(self) -> dict:
+        return self._errors
