@@ -6,18 +6,21 @@ from core.models.abstract.standard_model import StandardModel
 class ModuleDeviceType(StandardModel):
     __tablename__ = 'module_device_types'
 
-    fk_protocol = db.Column(UUID(as_uuid=True), db.ForeignKey('protocols.id'))
-    protocol = db.relationship("Protocol")
-
+    protocol_id = db.Column(UUID(as_uuid=True), db.ForeignKey('protocols.id'))
     manufacturer = db.Column(db.String(100), nullable=True)
     model = db.Column(db.String(100), nullable=True)
     code = db.Column(db.String(100), nullable=True)
 
+    device_type_datapoints = db.relationship("device_type_datapoints", back_populates="module_device_type")
+    protocol = db.relationship("Protocol", back_populates="module_device_types")
+    modules = db.relationship("Module", back_populates="module_device_type")
+
     def summary(self) -> dict:
         return dict(
-            id=self.id,
+            id=str(self.id),
+            protocol_id=str(self.protocol_id),
             code=self.code,
             model=self.model,
             manufacturer=self.manufacturer,
-            address_datatype=self.address_datatype.summary()
+            address_datatype=self.protocol.summary() if self.protocol else None
         )

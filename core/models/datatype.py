@@ -11,11 +11,11 @@ class Datatype(StandardModel):
     name = db.Column(db.String(100), nullable=True)
 
     protocol_id = db.Column(UUID(as_uuid=True), db.ForeignKey('protocols.id'))
-    protocol = db.relationship("Protocol", back_populates="address_datatype")
+    protocols = db.relationship("Protocol", back_populates="datatype")
 
     def summary(self) -> dict:
         return dict(
             id=self.id,
             name=self.name,
-            protocol=self.protocol.summary()
+            protocols=self.protocols.summary() if self.protocols else None
         )
