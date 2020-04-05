@@ -25,5 +25,4 @@ class DeviceTypeDatapoint(StandardModel):
             code=self.code,
             legend=self.legend,
             writable=self.writable,
-            module_device_type=self.module_device_type.summary() if self.module_device_type else None
         )

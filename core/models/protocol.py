@@ -19,5 +19,4 @@ class Protocol(StandardModel):
             id=str(self.id),
             datatype_id=str(self.datatype_id),
             name=self.name,
-            address_datatype=self.datatype.summary() if self.datatype else None
         )

@@ -4,7 +4,7 @@ from werkzeug.datastructures import ImmutableMultiDict
 from api import http_status
 from api.errors import ApiException, ValidationException
 from api.forms.module_form import ModuleSetValueForm
-from core.models import Module, DeviceTypeDatapoint
+from core.models import Module, DeviceTypeDatapoint, Protocol, Device, ModuleDeviceType, Datatype
 from mqtt.client import mqtt_client
 
 blueprint = Blueprint('blueprint', __name__, template_folder='templates', static_folder='static')
@@ -31,7 +31,7 @@ def test_cors():
     ), 200, {'ContentType': 'application/json'}
 
 
-# DATAPOINTS
+# DEVICE_TYPE_DATAPOINT
 @blueprint.route('/datapoints', methods=['GET'])
 def list_datapoints():
     datapoints = DeviceTypeDatapoint.query.all()
@@ -48,7 +48,91 @@ def get_datapoint(datapoint_id):
     ), 200, {'ContentType': 'application/json'}
 
 
+# DATATYPE
+@blueprint.route('/datatypes', methods=['GET'])
+def list_datatypes():
+    datatypes = Datatype.query.all()
+    return json.dumps(
+        [item.summary() for item in datatypes]
+    ), 200, {'ContentType': 'application/json'}
+
+
+@blueprint.route('/datatypes/<datatypes_id>', methods=['GET'])
+def get_datatype(datatypes_id):
+    datatype = Datatype.query.filter(Datatype.id == datatypes_id).first()
+    return json.dumps(
+        datatype.summary()
+    ), 200, {'ContentType': 'application/json'}
+
+
+# MODULE_DEVICE_TYPE
+@blueprint.route('/devicetypes', methods=['GET'])
+def list_device_types():
+    module_device_types = ModuleDeviceType.query.all()
+    return json.dumps(
+        [item.summary() for item in module_device_types]
+    ), 200, {'ContentType': 'application/json'}
+
+
+@blueprint.route('/devicetypes/<device_type_id>', methods=['GET'])
+def get_device_type(device_type_id):
+    module_device_type = ModuleDeviceType.query.filter(ModuleDeviceType.id == device_type_id).first()
+    return json.dumps(
+        module_device_type.summary()
+    ), 200, {'ContentType': 'application/json'}
+
+
+# PROTOCOLS
+@blueprint.route('/protocols', methods=['GET'])
+def list_protocols():
+    protocols = Protocol.query.all()
+    return json.dumps(
+        [item.summary() for item in protocols]
+    ), 200, {'ContentType': 'application/json'}
+
+
+@blueprint.route('/protocols/<protocol_id>', methods=['GET'])
+def get_protocol(protocol_id):
+    protocol = Protocol.query.filter(Protocol.id == protocol_id).first()
+    return json.dumps(
+        protocol.summary()
+    ), 200, {'ContentType': 'application/json'}
+
+
+# DEVICES
+@blueprint.route('/devices', methods=['GET'])
+def list_devices():
+    devices = Device.query.all()
+    return json.dumps(
+        [item.summary() for item in devices]
+    ), 200, {'ContentType': 'application/json'}
+
+
+@blueprint.route('/devices/<devices_id>', methods=['GET'])
+def get_device(devices_id):
+    device = Device.query.filter(Device.id == devices_id).first()
+    return json.dumps(
+        device.summary()
+    ), 200, {'ContentType': 'application/json'}
+
+
 # MODULES
+@blueprint.route('/modules', methods=['GET'])
+def list_modules():
+    modules = Module.query.all()
+    return json.dumps(
+        [item.summary() for item in modules]
+    ), 200, {'ContentType': 'application/json'}
+
+
+@blueprint.route('/modules/<module_id>', methods=['GET'])
+def get_module(module_id):
+    module = Module.query.filter(Module.id == module_id).first()
+    return json.dumps(
+        module.summary()
+    ), 200, {'ContentType': 'application/json'}
+
+
 @blueprint.route('/modules/<module_id>/set_value', methods=['POST'])
 def set_module_value(module_id):
     json_data = ImmutableMultiDict(request.get_json(force=True))

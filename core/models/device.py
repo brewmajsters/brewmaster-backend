@@ -20,5 +20,4 @@ class Device(StandardModel):
             uuid=str(self.uuid),
             address=self.address,
             poll_rate=self.poll_rate,
-            module=self.module.summary() if self.module else None
         )

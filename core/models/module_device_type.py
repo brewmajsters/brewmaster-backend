@@ -11,7 +11,7 @@ class ModuleDeviceType(StandardModel):
     model = db.Column(db.String(100), nullable=True)
     code = db.Column(db.String(100), nullable=True)
 
-    device_type_datapoints = db.relationship("device_type_datapoints", back_populates="module_device_type")
+    device_type_datapoints = db.relationship("DeviceTypeDatapoint", back_populates="module_device_type")
     protocol = db.relationship("Protocol", back_populates="module_device_types")
     modules = db.relationship("Module", back_populates="module_device_type")
 
@@ -22,5 +22,4 @@ class ModuleDeviceType(StandardModel):
             code=self.code,
             model=self.model,
             manufacturer=self.manufacturer,
-            address_datatype=self.protocol.summary() if self.protocol else None
         )
