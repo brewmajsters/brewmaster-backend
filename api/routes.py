@@ -4,7 +4,7 @@ from werkzeug.datastructures import ImmutableMultiDict
 from api import http_status
 from api.errors import ApiException, ValidationException
 from api.forms.module_form import ModuleSetValueForm
-from core.models import Module
+from core.models import Module, DeviceTypeDatapoint
 from mqtt.client import mqtt_client
 
 blueprint = Blueprint('blueprint', __name__, template_folder='templates', static_folder='static')
@@ -31,8 +31,16 @@ def test_cors():
     ), 200, {'ContentType': 'application/json'}
 
 
-# MODULES
+# DATAPOINTS
+@blueprint.route('/datapoints', methods=['GET'])
+def list_datapoints():
+    datapoints = DeviceTypeDatapoint.query.all()
+    return json.dumps(
+        datapoints
+    ), 200, {'ContentType': 'application/json'}
 
+
+# MODULES
 @blueprint.route('/modules/<module_id>/set_value', methods=['POST'])
 def set_module_value(module_id):
     json_data = ImmutableMultiDict(request.get_json(force=True))

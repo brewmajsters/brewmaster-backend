@@ -6,6 +6,4 @@ from core.models.module_device_type import ModuleDeviceType
 from core.models.protocol import Protocol
 from core.models.device import Device
 from core.models.device_type_datapoint import DeviceTypeDatapoint
-from core.models.modbus_rtu import ModbusRtu
-from core.models.one_wire import OneWire
-from core.models.gpio import Gpio
+from core.models.datatype import Datatype
