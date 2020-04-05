@@ -12,3 +12,12 @@ class ModuleDeviceType(StandardModel):
     manufacturer = db.Column(db.String(100), nullable=True)
     model = db.Column(db.String(100), nullable=True)
     code = db.Column(db.String(100), nullable=True)
+
+    def summary(self) -> dict:
+        return dict(
+            id=self.id,
+            code=self.code,
+            model=self.model,
+            manufacturer=self.manufacturer,
+            address_datatype=self.address_datatype.summary()
+        )

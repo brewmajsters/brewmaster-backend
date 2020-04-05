@@ -36,7 +36,15 @@ def test_cors():
 def list_datapoints():
     datapoints = DeviceTypeDatapoint.query.all()
     return json.dumps(
-        datapoints
+        [item.summary() for item in datapoints]
+    ), 200, {'ContentType': 'application/json'}
+
+
+@blueprint.route('/datapoints/<datapoint_id>', methods=['GET'])
+def get_datapoint(datapoint_id):
+    datapoint = DeviceTypeDatapoint.query.filter(DeviceTypeDatapoint.id == datapoint_id).first()
+    return json.dumps(
+        datapoint.summary()
     ), 200, {'ContentType': 'application/json'}
 
 

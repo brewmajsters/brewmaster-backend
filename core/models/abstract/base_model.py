@@ -1,3 +1,4 @@
+from abc import abstractmethod
 from datetime import datetime
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.exc import DatabaseError
@@ -69,3 +70,7 @@ class BaseModel(db.Model):
                 status_code=http_status.HTTP_503_SERVICE_UNAVAILABLE,
                 previous=e
             )
+
+    @abstractmethod
+    def summary(self) -> dict:
+        pass

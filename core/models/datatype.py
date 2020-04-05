@@ -5,9 +5,17 @@ from core.models.abstract.standard_model import StandardModel
 
 
 class Datatype(StandardModel):
+
     __tablename__ = 'datatypes'
 
     name = db.Column(db.String(100), nullable=True)
 
-    fk_protocol = db.Column(UUID(as_uuid=True), db.ForeignKey('protocols.id'))
+    protocol_id = db.Column(UUID(as_uuid=True), db.ForeignKey('protocols.id'))
     protocol = db.relationship("Protocol", back_populates="address_datatype")
+
+    def summary(self) -> dict:
+        return dict(
+            id=self.id,
+            name=self.name,
+            protocol=self.protocol.summary()
+        )

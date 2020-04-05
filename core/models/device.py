@@ -13,3 +13,11 @@ class Device(StandardModel):
 
     address = db.Column(db.String(100), nullable=True)
     poll_rate = db.Column(db.String(100), nullable=True)
+
+    def summary(self) -> dict:
+        return dict(
+            id=self.id,
+            uuid=self.uuid,
+            address=self.address,
+            poll_rate=self.poll_rate,
+        )
