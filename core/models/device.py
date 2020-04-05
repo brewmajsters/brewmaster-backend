@@ -9,6 +9,7 @@ class Device(StandardModel):
     fk_module = db.Column(UUID(as_uuid=True), db.ForeignKey('modules.id'))
     module = db.relationship("Module", back_populates="devices")
 
-    gpios = db.relationship("Gpio", back_populates="device")
-    modbus_rtus = db.relationship("ModbusRtu", back_populates="device")
-    one_wires = db.relationship("OneWire", back_populates="device")
+    uuid = db.Column(UUID(as_uuid=True), nullable=True)
+
+    address = db.Column(db.String(100), nullable=True)
+    poll_rate = db.Column(db.String(100), nullable=True)

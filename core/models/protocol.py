@@ -6,3 +6,5 @@ class Protocol(StandardModel):
     __tablename__ = 'protocols'
 
     name = db.Column(db.String(100), nullable=True)
+
+    address_datatype = db.relationship("Datatype", back_populates="protocol")

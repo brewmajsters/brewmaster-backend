@@ -9,7 +9,8 @@ class DeviceTypeDatapoint(StandardModel):
 
     name = db.Column(db.String(100), nullable=True)
     units = db.Column(db.String(100), nullable=True)
-    datapoint_code = db.Column(db.String(100), nullable=True)
+    code = db.Column(db.String(100), nullable=True)
+    legend = db.Column(db.String(100), nullable=True)
     writable = db.Column(db.Boolean, nullable=True)
 
     fk_module_device_type = db.Column(UUID(as_uuid=True), db.ForeignKey('module_device_types.id'))
