@@ -133,8 +133,73 @@ def get_module(module_id):
     ), 200, {'ContentType': 'application/json'}
 
 
+# MODULES_OPERATIONS
+@blueprint.route('/modules/request', methods=['POST'])
+def request_all(module_id):
+    json_data = ImmutableMultiDict(request.get_json(force=True))
+    form = ModuleSetValueForm(json_data, meta={'csrf': False})
+
+    if not form.validate():
+        raise ValidationException(form.errors)
+
+    modules = Module.query.all()
+    if not modules:
+        raise ApiException('Daný modul sa nepodarilo nájsť.', status_code=http_status.HTTP_404_NOT_FOUND)
+
+    data = form.data
+    return json.dumps(data), 200, {'ContentType': 'application/json'}
+
+
+@blueprint.route('/modules/<module_id>/request', methods=['POST'])
+def request_module(module_id):
+    json_data = ImmutableMultiDict(request.get_json(force=True))
+    form = ModuleSetValueForm(json_data, meta={'csrf': False})
+
+    if not form.validate():
+        raise ValidationException(form.errors)
+
+    module = Module.query.get(module_id)
+    if not module:
+        raise ApiException('Daný modul sa nepodarilo nájsť.', status_code=http_status.HTTP_404_NOT_FOUND)
+
+    data = form.data
+    return json.dumps(data), 200, {'ContentType': 'application/json'}
+
+
+@blueprint.route('/modules/<module_id>/update', methods=['POST'])
+def update_module(module_id):
+    json_data = ImmutableMultiDict(request.get_json(force=True))
+    form = ModuleSetValueForm(json_data, meta={'csrf': False})
+
+    if not form.validate():
+        raise ValidationException(form.errors)
+
+    module = Module.query.get(module_id)
+    if not module:
+        raise ApiException('Daný modul sa nepodarilo nájsť.', status_code=http_status.HTTP_404_NOT_FOUND)
+
+    data = form.data
+    return json.dumps(data), 200, {'ContentType': 'application/json'}
+
+
 @blueprint.route('/modules/<module_id>/set_value', methods=['POST'])
-def set_module_value(module_id):
+def set_value_module(module_id):
+    json_data = ImmutableMultiDict(request.get_json(force=True))
+    form = ModuleSetValueForm(json_data, meta={'csrf': False})
+
+    if not form.validate():
+        raise ValidationException(form.errors)
+
+    module = Module.query.get(module_id)
+    if not module:
+        raise ApiException('Daný modul sa nepodarilo nájsť.', status_code=http_status.HTTP_404_NOT_FOUND)
+
+    data = form.data
+    return json.dumps(data), 200, {'ContentType': 'application/json'}
+
+
+@blueprint.route('/modules/<module_id>/config', methods=['POST'])
+def config_module(module_id):
     json_data = ImmutableMultiDict(request.get_json(force=True))
     form = ModuleSetValueForm(json_data, meta={'csrf': False})
 
