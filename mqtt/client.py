@@ -3,7 +3,7 @@ import logging
 import os
 import eventlet
 import paho.mqtt.client as mqtt
-from core.models import Sensor, Module
+from core.models import Sensor, Module, Device
 from mqtt import mqtt_status
 from mqtt.errors import MQTTException
 
@@ -57,13 +57,13 @@ class MqttClient(object):
     def on_message(self, client, userdata, msg):
         topic = msg.topic
         string_message = str(msg.payload.decode('utf-8'))
+        dict_message = json.loads(string_message)
 
         with self.app.app_context():
             module = Module.query.filter_by(mac=topic).first()
 
-            # Received from module
-            if module:
-                dict_message = json.loads(string_message)
+            # Request result
+            if dict_message.get('result'):
 
                 if dict_message.get('result') == 'OK':
                     logging.getLogger('root_logger').info(f'[MQTT]: Message received: {string_message}')
@@ -72,23 +72,33 @@ class MqttClient(object):
                 else:
                     logging.getLogger('root_logger').info(f'[MQTT]: Message received: {string_message}')
 
-            # Received from sensor
-            else:
-                float_message = float(msg.payload.decode('utf-8'))
+            # Value update asynchronously
+            elif dict_message.get('values'):
+                values = dict_message.get('values')
 
-                self.socketio.emit(topic, {'number': float_message}, namespace='/test_web_socket')
-                logging.getLogger('root_logger').info(f'[SocketIO]: Sent message: {string_message} to client.')
+                for item in values:
+                    device = Device.query.get(item.get('device_id'))
 
-                if not topic in self.time:
-                    self.time[topic] = 0
+                    if not device:
+                        raise MQTTException(
+                            f'Špecifikovaný device nebol nájdený: {item.get("device_id")}',
+                            status_code=mqtt_status.MQTT_ERR_NOT_FOUND
+                        )
 
-                if self.time.get(topic) >= self.granularity:
-                    logging.getLogger('root_logger').info(f'[PostgreSQL]: Created sensor instance: {topic}')
-                    Sensor(name=topic, message=string_message).create()
-                    self.time[topic] = 0
+                    self.socketio.emit(topic, dict_message, namespace='/web_socket')
+                    logging.getLogger('root_logger').info(f'[SocketIO]: Posielaná správa: {string_message} na webový klient.')
 
-                self.time[topic] += 1
-                logging.getLogger('root_logger').info(f'[MQTT]: Message received: {string_message}')
+                    if not topic in self.time:
+                        self.time[topic] = 0
+
+                    if self.time.get(topic) >= self.granularity:
+                        logging.getLogger('root_logger').info(f'[PostgreSQL]: Vytvorená inštancia v histórii posielaných dát: {topic}')
+                        Sensor(name=topic, message=string_message).create()
+                        self.time[topic] = 0
+
+                    self.time[topic] += 1
+
+            logging.getLogger('root_logger').info(f'[MQTT]: Message received: {string_message}')
 
     def connect(self):
         self.client.connect(self.broker_host, self.broker_port, self.keep_alive)
