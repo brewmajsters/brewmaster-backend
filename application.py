@@ -1,6 +1,7 @@
 from flask import Flask
 from flask_cors import CORS
 from api import routes
+from api.errors import register_error_handlers
 from web_socket.events import socketio
 from core.handlers.db_handler import init_logger
 from core.models.abstract.base_model import initialize_db
@@ -17,6 +18,9 @@ def create_app():
     # Create CORS
     CORS(app)
 
+    # Register custom error handlers
+    register_error_handlers(app)
+
     # Create routes
     app.register_blueprint(routes.blueprint)
 
@@ -32,4 +36,5 @@ def create_app():
 
     # Initializing socketio
     socketio.init_app(app)
+
     return app
