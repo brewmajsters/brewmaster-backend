@@ -3,7 +3,6 @@ from datetime import datetime
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.exc import DatabaseError
 from sqlalchemy.orm.exc import MultipleResultsFound, NoResultFound
-
 from api import http_status
 from api.errors import ApiException
 

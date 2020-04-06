@@ -10,6 +10,9 @@ class TimeScaleModel(BaseModel):
     __tablename__ = 'abstract'
     __timestamp_field__ = 'time'
 
+    def summary(self) -> dict:
+        pass
+
 
 @event.listens_for(TimeScaleModel, 'instrument_class', propagate=True)
 def instrument_class(mapper, class_):

@@ -1,6 +1,5 @@
 import json
 import logging
-import uuid
 from logging import Handler, Filter
 from flask import request
 from api import http_status

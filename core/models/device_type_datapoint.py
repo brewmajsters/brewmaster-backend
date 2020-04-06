@@ -1,5 +1,4 @@
 from sqlalchemy.dialects.postgresql import UUID
-
 from core.models.abstract.base_model import db
 from core.models.abstract.standard_model import StandardModel
 
