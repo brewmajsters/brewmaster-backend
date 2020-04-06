@@ -77,7 +77,7 @@ class MqttClient(object):
                 values = dict_message.get('values')
 
                 for item in values:
-                    device = Device.query.get(item.get('device_id'))
+                    device = Device.query.get(item.get('id'))
 
                     if not device:
                         raise MQTTException(
@@ -88,13 +88,13 @@ class MqttClient(object):
                     self.socketio.emit(topic, dict_message, namespace='/web_socket')
                     logging.getLogger('root_logger').info(f'[SocketIO]: Posielaná správa: {string_message} na webový klient.')
 
-                    if not topic in self.time:
-                        self.time[topic] = 0
+                if not topic in self.time:
+                    self.time[topic] = 0
 
-                    if self.time.get(topic) >= self.granularity:
-                        logging.getLogger('root_logger').info(f'[PostgreSQL]: Vytvorená inštancia v histórii posielaných dát: {topic}')
-                        Sensor(name=topic, message=string_message).create()
-                        self.time[topic] = 0
+                if self.time.get(topic) >= self.granularity:
+                    logging.getLogger('root_logger').info(f'[PostgreSQL]: Vytvorená inštancia v histórii posielaných dát: {topic}')
+                    Sensor(name=topic, message=string_message).create()
+                    self.time[topic] = 0
 
                     self.time[topic] += 1
 

@@ -1,6 +1,8 @@
+import json
 import logging
 from random import random
 from threading import Thread, Event
+from core.models import Module
 from mqtt.client import mqtt_client
 
 
@@ -12,8 +14,6 @@ class Sensor(object):
         self.socket_io = socket_io
 
     def run(self):
-        mqtt_client.subscribe(self.name)
-
         if not self.thread.is_alive():
             thread = RandomThread(self.name, self.socket_io, self.thread_stop_event)
             thread.start()
@@ -33,11 +33,24 @@ class RandomThread(Thread):
         self.delay = 1
         super(RandomThread, self).__init__()
 
-    def random_number_generator(self):
-        while not self.thread_stop_event.isSet():
-            number = round(random() * 10, 3)
-            mqtt_client.publish(self.sensor_name, str(number))
-            self.socket_io.sleep(self.delay)
-
     def run(self):
-        self.random_number_generator()
+        while not self.thread_stop_event.isSet():
+            data = {
+                "module_mac": self.sensor_name,
+                "values": [],
+            }
+
+            with self.socket_io.sockio_mw.flask_app.app_context():
+                module = Module.query.filter_by(mac=self.sensor_name).first()
+                devices = module.devices
+
+                for device in devices:
+                    data['values'].append({
+                        'id': str(device.id),
+                        'value': round(random() * 10, 3),
+                        'unit': 'value',
+                        'writable': True
+                    })
+
+            mqtt_client.publish(self.sensor_name, json.dumps(data))
+            self.socket_io.sleep(self.delay)
