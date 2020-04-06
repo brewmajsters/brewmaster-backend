@@ -1,10 +1,11 @@
+import json
 import logging
 import os
 import eventlet
 import paho.mqtt.client as mqtt
-from paho.mqtt import MQTTException
-from core.models import Sensor
-from mqtt.mqtt_status import MQTTError
+from core.models import Sensor, Module
+from mqtt import mqtt_status
+from mqtt.errors import MQTTException
 
 eventlet.monkey_patch()
 
@@ -40,7 +41,8 @@ class MqttClient(object):
             logging.getLogger('root_logger').info(f'[MQTT]: Successfully connected to broker {self.broker_host}.')
         else:
             raise MQTTException(
-                f'[MQTT]: Connection to broker {self.broker_host} refused. Exited with code {MQTTError(rc).name}'
+                f'[MQTT]: Connection to broker {self.broker_host} refused.',
+                status_code=mqtt_status.MQTT_ERR_CONN_REFUSED
             )
 
     def on_disconnect(self, client, userdata, flags, rc=0):
@@ -48,26 +50,45 @@ class MqttClient(object):
             logging.getLogger('root_logger').info(f'[MQTT]: Successfully disconnected from broker {self.broker_host}.')
         else:
             raise MQTTException(
-                f'[MQTT]: Disconnection from broker {self.broker_host} refused. Exited with code {MQTTError(rc).name}'
+                f'[MQTT]: Disconnection from broker {self.broker_host} refused.',
+                status_code=mqtt_status.MQTT_ERR_CONN_LOST
             )
 
     def on_message(self, client, userdata, msg):
         topic = msg.topic
         string_message = str(msg.payload.decode('utf-8'))
-        float_message = float(msg.payload.decode('utf-8'))
 
         with self.app.app_context():
-            self.socketio.emit(topic,  {'number': float_message}, namespace='/test_web_socket')
-            logging.getLogger('root_logger').info(f'[SocketIO]: Sent message: {string_message} to client.')
+            module = Module.query.filter_by(mac=topic).first()
 
-            if not topic in self.time:
-                self.time[topic] = 0
-            if self.time.get(topic) >= self.granularity:
-                logging.getLogger('root_logger').info(f'[PostgreSQL]: Created sensor instance: {topic}')
-                Sensor(name=topic, message=string_message).create()
-                self.time[topic] = 0
-        self.time[topic] += 1
-        logging.getLogger('root_logger').info(f'[MQTT]: Message received: {string_message}')
+            # Received from module
+            if module:
+                dict_message = json.loads(string_message)
+
+                if dict_message.get('result') == 'OK':
+                    logging.getLogger('root_logger').info(f'[MQTT]: Message received: {string_message}')
+                elif dict_message.get('result') == 'ERROR':
+                    raise MQTTException(dict_message.get('details'), status_code=mqtt_status.MQTT_ERR_NOT_SUPPORTED)
+                else:
+                    logging.getLogger('root_logger').info(f'[MQTT]: Message received: {string_message}')
+
+            # Received from sensor
+            else:
+                float_message = float(msg.payload.decode('utf-8'))
+
+                self.socketio.emit(topic, {'number': float_message}, namespace='/test_web_socket')
+                logging.getLogger('root_logger').info(f'[SocketIO]: Sent message: {string_message} to client.')
+
+                if not topic in self.time:
+                    self.time[topic] = 0
+
+                if self.time.get(topic) >= self.granularity:
+                    logging.getLogger('root_logger').info(f'[PostgreSQL]: Created sensor instance: {topic}')
+                    Sensor(name=topic, message=string_message).create()
+                    self.time[topic] = 0
+
+                self.time[topic] += 1
+                logging.getLogger('root_logger').info(f'[MQTT]: Message received: {string_message}')
 
     def connect(self):
         self.client.connect(self.broker_host, self.broker_port, self.keep_alive)
@@ -78,7 +99,7 @@ class MqttClient(object):
         self.client.disconnect()
 
     def subscribe(self, name):
-        logging.getLogger('root_logger').info(f'[MQTT]: Subscribed to sensor: {name}.')
+        logging.getLogger('root_logger').info(f'[MQTT]: Subscribed to device: {name}.')
         self.client.subscribe(name)
 
     def publish(self, name, message):

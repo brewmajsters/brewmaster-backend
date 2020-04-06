@@ -6,4 +6,4 @@ from core.models.module_device_type import ModuleDeviceType
 from core.models.protocol import Protocol
 from core.models.device import Device
 from core.models.device_type_datapoint import DeviceTypeDatapoint
-from core.models.datatype import Datatype
+from core.models.datatype import DataType

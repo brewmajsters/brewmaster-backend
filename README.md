@@ -74,4 +74,18 @@ and we are using for maintaining codebase technique git-flow.
     - **develop** branch containing changes implemented in specific sprint.
     - **feature/** branches containing implementations of specific issues/features.
 
+#### Testing
+
+Implemented tests are located in path `core/tests/*`. To run test file, its needed to name it with prefix `test_*.py`.
+Tests are implemented with [pytest](https://github.com/pytest-dev/pytest/) library. Pytest settings are located in project root file `pytest.ini`.
+
+- To run tests it's needed to type command `pytest`.
+
+#### Seeding DB
+
+Database seed is made with library [flask-seeder](https://github.com/diddi-/flask-seeder). All seeders are located in
+path `seeds/*`
+
+- To seed database with fake data for test purposes, its necessary to run command `flask seed run`.
+
 Cheers! :beers:, by team **Brewmasters**.

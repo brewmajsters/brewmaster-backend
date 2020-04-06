@@ -1,6 +1,7 @@
 import logging
 from flask import jsonify
 from api import http_status
+from mqtt.errors import MQTTException
 
 
 def register_error_handlers(app):
@@ -11,6 +12,12 @@ def register_error_handlers(app):
         return response
 
     @app.errorhandler(ValidationException)
+    def handle_invalid_usage(error):
+        response = jsonify(error.payload)
+        response.status_code = error.status_code
+        return response
+
+    @app.errorhandler(MQTTException)
     def handle_invalid_usage(error):
         response = jsonify(error.payload)
         response.status_code = error.status_code

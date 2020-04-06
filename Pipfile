@@ -16,6 +16,7 @@ python-dotenv = "==0.10.*"
 paho-mqtt = "==1.4.*"
 eventlet = "*"
 pytest-flask = "==0.15.*"
+flask_seeder = "==1.1.*"
 
 [requires]
 python_version = "3.7"

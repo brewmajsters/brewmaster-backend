@@ -1,5 +1,7 @@
 from abc import abstractmethod
 from datetime import datetime
+
+from flask_seeder import FlaskSeeder
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.exc import DatabaseError
 from sqlalchemy.orm.exc import MultipleResultsFound, NoResultFound
@@ -13,6 +15,9 @@ def initialize_db(app):
     app.app_context().push()
     db.init_app(app)
     db.create_all()
+
+    seeder = FlaskSeeder()
+    seeder.init_app(app, db)
 
 
 class BaseModel(db.Model):
