@@ -20,3 +20,10 @@
 
 - **Feature**: Implemented basic unit tests via pytest.
 - **Fix**: Changed language to raised exception messages.
+
+## 0.5.0: 08.04.2020
+
+- **Feature**: Implemented all REST endpoints.
+- **Feature**: Implemented testing DB seed.
+- **Feature**: Implemented communication with modules via MQTT according to MQTT API specification.
+- **Change**: Changed Sensor emulator according to MQTT specification.

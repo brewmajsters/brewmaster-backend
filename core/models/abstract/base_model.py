@@ -1,8 +1,10 @@
+from abc import abstractmethod
 from datetime import datetime
+
+from flask_seeder import FlaskSeeder
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.exc import DatabaseError
 from sqlalchemy.orm.exc import MultipleResultsFound, NoResultFound
-
 from api import http_status
 from api.errors import ApiException
 
@@ -13,6 +15,9 @@ def initialize_db(app):
     app.app_context().push()
     db.init_app(app)
     db.create_all()
+
+    seeder = FlaskSeeder()
+    seeder.init_app(app, db)
 
 
 class BaseModel(db.Model):
@@ -69,3 +74,7 @@ class BaseModel(db.Model):
                 status_code=http_status.HTTP_503_SERVICE_UNAVAILABLE,
                 previous=e
             )
+
+    @abstractmethod
+    def summary(self) -> dict:
+        pass

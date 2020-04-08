@@ -7,13 +7,16 @@ verify_ssl = true
 
 [packages]
 flask = "==1.1.*"
-psycopg2 = "==2.8.*"
 flask-sqlalchemy = "==2.4.*"
+flask-socketio = "*"
+flask-cors = "*"
+flask_wtf = "==0.14.*"
+psycopg2 = "==2.8.*"
 python-dotenv = "==0.10.*"
 paho-mqtt = "==1.4.*"
-flask-socketio = "*"
 eventlet = "*"
 pytest-flask = "==0.15.*"
+flask_seeder = "==1.1.*"
 
 [requires]
 python_version = "3.7"
