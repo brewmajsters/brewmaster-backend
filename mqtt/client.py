@@ -96,7 +96,7 @@ class MqttClient(object):
                     Sensor(name=topic, message=string_message).create()
                     self.time[topic] = 0
 
-                    self.time[topic] += 1
+                self.time[topic] += 1
 
             logging.getLogger('root_logger').info(f'[MQTT]: Message received: {string_message}')
 
