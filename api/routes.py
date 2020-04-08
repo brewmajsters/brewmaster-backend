@@ -4,7 +4,7 @@ from werkzeug.datastructures import ImmutableMultiDict
 from api import http_status
 from api.errors import ApiException, ValidationException
 from api.forms.module_form import ModuleSetValueForm
-from core.models import Module, DeviceTypeDatapoint, Protocol, Device, ModuleDeviceType, Datatype
+from core.models import Module, DeviceTypeDatapoint, Protocol, Device, ModuleDeviceType, DataType
 from mqtt.client import mqtt_client
 
 blueprint = Blueprint('blueprint', __name__, template_folder='templates', static_folder='static')
@@ -51,7 +51,7 @@ def get_datapoint(datapoint_id):
 # DATATYPE
 @blueprint.route('/datatypes', methods=['GET'])
 def list_datatypes():
-    datatypes = Datatype.query.all()
+    datatypes = DataType.query.all()
     return json.dumps(
         [item.summary() for item in datatypes]
     ), 200, {'ContentType': 'application/json'}
@@ -59,7 +59,7 @@ def list_datatypes():
 
 @blueprint.route('/datatypes/<datatypes_id>', methods=['GET'])
 def get_datatype(datatypes_id):
-    datatype = Datatype.query.filter(Datatype.id == datatypes_id).first()
+    datatype = DataType.query.filter(DataType.id == datatypes_id).first()
     return json.dumps(
         datatype.summary()
     ), 200, {'ContentType': 'application/json'}
@@ -190,11 +190,18 @@ def set_value_module(module_id):
     if not form.validate():
         raise ValidationException(form.errors)
 
+    data = form.data
+
     module = Module.query.get(module_id)
     if not module:
         raise ApiException('Daný modul sa nepodarilo nájsť.', status_code=http_status.HTTP_404_NOT_FOUND)
 
-    data = form.data
+    device = module.devices.filter_by(id=data.get('device_id')).first()
+    if not device:
+        raise ApiException('Dané zariadenie sa nepodarilo nájsť.', status_code=http_status.HTTP_404_NOT_FOUND)
+
+    mqtt_client.publish(module.mac, json.dumps(data))
+
     return json.dumps(data), 200, {'ContentType': 'application/json'}
 
 

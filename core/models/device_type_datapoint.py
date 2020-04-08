@@ -11,8 +11,8 @@ class DeviceTypeDatapoint(StandardModel):
     code = db.Column(db.String(100), nullable=True)
     legend = db.Column(db.String(100), nullable=True)
     writable = db.Column(db.Boolean, nullable=True)
-
     module_device_type_id = db.Column(UUID(as_uuid=True), db.ForeignKey('module_device_types.id'))
+
     module_device_type = db.relationship("ModuleDeviceType", back_populates="device_type_datapoints")
 
     def summary(self) -> dict:

@@ -1,6 +1,5 @@
 import logging
 from core.models import Notification
-from core.tests.fixtures import app
 
 
 class TestLogger:
