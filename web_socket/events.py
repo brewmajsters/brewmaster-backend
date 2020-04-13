@@ -7,7 +7,7 @@ socketio = SocketIO(async_mode="eventlet")
 sensors = []
 
 
-@socketio.on('connect', namespace='/test_web_socket')
+@socketio.on('connect', namespace='/web_socket')
 def on_connect():
     global sensors
 
@@ -19,7 +19,7 @@ def on_connect():
         sensor.run()
 
 
-@socketio.on('disconnect', namespace='/test_web_socket')
+@socketio.on('disconnect', namespace='/web_socket')
 def on_disconnect():
     global sensors
 
@@ -29,6 +29,6 @@ def on_disconnect():
         sensor.stop()
 
 
-@socketio.on('callback', namespace='/test_web_socket')
+@socketio.on('callback', namespace='/web_socket')
 def on_callback(msg):
     logging.getLogger('root_logger').info(f'[SocketIO]: ACK: {msg}')

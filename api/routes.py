@@ -1,4 +1,6 @@
 import json
+import time
+
 from flask import Blueprint, render_template, request
 from werkzeug.datastructures import ImmutableMultiDict
 from api import http_status
@@ -6,6 +8,7 @@ from api.errors import ApiException, ValidationException
 from api.forms.module_form import ModuleSetValueForm
 from core.models import Module, DeviceTypeDatapoint, Protocol, Device, ModuleDeviceType, DataType
 from mqtt.client import mqtt_client
+from mqtt.errors import MQTTException
 
 blueprint = Blueprint('blueprint', __name__, template_folder='templates', static_folder='static')
 
@@ -200,9 +203,12 @@ def set_value_module(module_id):
     if not device:
         raise ApiException('Dané zariadenie sa nepodarilo nájsť.', status_code=http_status.HTTP_404_NOT_FOUND)
 
-    mqtt_client.publish(module.mac, json.dumps(data))
+    try:
+        response = mqtt_client.send_message(module.mac, json.dumps(data))
+    except MQTTException as e:
+        raise ApiException(e.message, status_code=http_status.HTTP_400_BAD_REQUEST, previous=e)
 
-    return json.dumps(data), 200, {'ContentType': 'application/json'}
+    return json.dumps(response), 200, {'ContentType': 'application/json'}
 
 
 @blueprint.route('/modules/<module_id>/config', methods=['POST'])

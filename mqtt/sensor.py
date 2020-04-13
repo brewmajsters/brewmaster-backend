@@ -37,7 +37,7 @@ class RandomThread(Thread):
         while not self.thread_stop_event.isSet():
             data = {
                 "module_mac": self.sensor_name,
-                "values": [],
+                "values": {},
             }
 
             with self.socket_io.sockio_mw.flask_app.app_context():
@@ -45,12 +45,11 @@ class RandomThread(Thread):
                 devices = module.devices
 
                 for device in devices:
-                    data['values'].append({
-                        'id': str(device.id),
+                    data['values'][str(device.id)] = {
                         'value': round(random() * 10, 3),
                         'unit': 'value',
                         'writable': True
-                    })
+                    }
 
             mqtt_client.publish(self.sensor_name, json.dumps(data))
             self.socket_io.sleep(self.delay)
