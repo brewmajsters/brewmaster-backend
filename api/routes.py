@@ -1,6 +1,4 @@
 import json
-import time
-
 from flask import Blueprint, render_template, request
 from werkzeug.datastructures import ImmutableMultiDict
 from api import http_status
@@ -202,6 +200,12 @@ def set_value_module(module_id):
     device = module.devices.filter_by(id=data.get('device_id')).first()
     if not device:
         raise ApiException('Dané zariadenie sa nepodarilo nájsť.', status_code=http_status.HTTP_404_NOT_FOUND)
+
+    data['device_uuid'] = data['device_id']
+    del data['device_id']
+
+    # TODO: Ziskat sequence number (odniekial)
+    data['sequence_number'] = 123
 
     try:
         response = mqtt_client.send_message(module.mac, json.dumps(data))

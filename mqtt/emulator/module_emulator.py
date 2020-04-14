@@ -1,47 +1,48 @@
 import json
 import logging
+import time
 from random import random
 from threading import Thread, Event
 from core.models import Module
-from mqtt.client import mqtt_client
+from mqtt.emulator.client_emulator import mqtt_client_emulator
 
 
-class Sensor(object):
-    def __init__(self, name, socket_io):
+class ModuleEmulator(object):
+    def __init__(self, name, app):
         self.thread = Thread()
         self.thread_stop_event = Event()
         self.name = name
-        self.socket_io = socket_io
+        self.app = app
 
     def run(self):
         if not self.thread.is_alive():
-            thread = RandomThread(self.name, self.socket_io, self.thread_stop_event)
+            thread = RandomThread(self.name, self.app, self.thread_stop_event)
             thread.start()
-            logging.getLogger('root_logger').info(f'[Sensor {self.name}]: Thread started.')
+            logging.getLogger('root_logger').info(f'[EMULATOR {self.name}]: Thread started.')
 
     def stop(self):
         if self.thread.isAlive():
             self.thread_stop_event.set()
-        logging.getLogger('root_logger').info(f'[Sensor {self.name}]: Thread ended.')
+        logging.getLogger('root_logger').info(f'[EMULATOR {self.name}]: Thread ended.')
 
 
 class RandomThread(Thread):
-    def __init__(self, name, socket_io, thread_stop_event):
+    def __init__(self, mac, app, thread_stop_event):
         self.thread_stop_event = thread_stop_event
-        self.socket_io = socket_io
-        self.sensor_name = name
-        self.delay = 1
+        self.app = app
+        self.module_mac = mac
+        mqtt_client_emulator.subscribe(mac)
         super(RandomThread, self).__init__()
 
     def run(self):
         while not self.thread_stop_event.isSet():
             data = {
-                "module_mac": self.sensor_name,
+                "module_mac": self.module_mac,
                 "values": {},
             }
 
-            with self.socket_io.sockio_mw.flask_app.app_context():
-                module = Module.query.filter_by(mac=self.sensor_name).first()
+            with self.app.app_context():
+                module = Module.query.filter_by(mac=self.module_mac).first()
                 devices = module.devices
 
                 for device in devices:
@@ -51,5 +52,5 @@ class RandomThread(Thread):
                         'writable': True
                     }
 
-            mqtt_client.publish(self.sensor_name, json.dumps(data))
-            self.socket_io.sleep(self.delay)
+            mqtt_client_emulator.publish('brewmaster-backend', json.dumps(data))
+            time.sleep(1)

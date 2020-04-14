@@ -2,10 +2,13 @@ from flask import Flask
 from flask_cors import CORS
 from api import routes
 from api.errors import register_error_handlers
+from core.models import Module
+from mqtt.emulator.module_emulator import ModuleEmulator
 from web_socket.events import socketio
 from core.handlers.db_handler import init_logger
 from core.models.abstract.base_model import initialize_db
 from mqtt.client import mqtt_client
+from mqtt.emulator.client_emulator import mqtt_client_emulator
 
 
 def create_app():
@@ -35,6 +38,17 @@ def create_app():
     mqtt_client.connect()
     # Handling connections to mqtt modules
     mqtt_client.start_mqtt_connections()
+
+    # Vytvorenie emulátorov simulujúcich moduly
+    if app.config.get('TESTING'):
+        mqtt_client_emulator.init(app)
+        mqtt_client_emulator.connect()
+        emulators = []
+
+        for module in Module.query.all():
+            emulator = ModuleEmulator(module.mac, app)
+            emulators.append(emulator)
+            emulator.run()
 
     # Initializing socketio
     socketio.init_app(app)

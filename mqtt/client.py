@@ -38,11 +38,11 @@ class MqttClient(object):
         self.client.on_message = self.on_message
 
     def start_mqtt_connections(self):
+        mqtt_client.subscribe('brewmaster-backend')
+
         modules = Module.query.all()
 
         for module in modules:
-            mqtt_client.subscribe(module.mac)
-
             # TODO: Nastavit granularitu ukladania zaznamov do DB
             self.db_blocker.append({
                 'module_mac': module.mac,
@@ -55,6 +55,58 @@ class MqttClient(object):
                 'blocked': False,
                 'message': None
             })
+
+    def _handle_periodical_value_reports(self, data):
+        with self.app.app_context():
+            module_mac = data.get('module_mac')
+            values = data.get('values')
+
+            module = Module.query.filter_by(mac=module_mac).first()
+
+            if not module:
+                raise MQTTException(
+                    f'Špecifikovaný modul s mac nebol nájdený: {module_mac}',
+                    status_code=mqtt_status.MQTT_ERR_NOT_FOUND
+                )
+
+            for key, value in values.items():
+                device = module.devices.filter_by(id=key)
+
+                if not device:
+                    raise MQTTException(
+                        f'Špecifikovaný device nebol nájdený: {key}',
+                        status_code=mqtt_status.MQTT_ERR_NOT_FOUND
+                    )
+
+                self.socketio.emit(module_mac, data, namespace='/web_socket')
+                logging.getLogger('root_logger').info(f'[SocketIO]: Posielaná správa: {data} na webový klient.')
+
+            module_db_blocker = next(filter(lambda obj: obj.get('module_mac') == module_mac, self.db_blocker), None)
+
+            if module_db_blocker.get('time') >= module_db_blocker.get('granularity'):
+                logging.getLogger('root_logger').info(
+                    f'[PostgreSQL]: Vytvorená inštancia v histórii posielaných dát: {module_mac}'
+                )
+                ModuleNotification(module=module, message=json.dumps(values)).create()
+                module_db_blocker['time'] = 0
+
+            module_db_blocker['time'] += 1
+
+    def _handle_result_reports(self, data):
+        with self.app.app_context():
+            module_mac = data.get('module_mac')
+
+            module = Module.query.filter_by(mac=module_mac).first()
+
+            if not module:
+                raise MQTTException(
+                    f'Špecifikovaný modul s mac nebol nájdený: {module_mac}',
+                    status_code=mqtt_status.MQTT_ERR_NOT_FOUND
+                )
+
+            module_ack_blocker = next(filter(lambda obj: obj.get('module_mac') == module_mac, self.ack_blocker), None)
+            module_ack_blocker['blocked'] = False
+            module_ack_blocker['message'] = data
 
     def on_log(self, clinet, userdata, level, buf):
         logging.getLogger('root_logger').info(f'[MQTT]: Connecting to broker {self.broker_host}: {buf}')
@@ -78,53 +130,18 @@ class MqttClient(object):
             )
 
     def on_message(self, client, userdata, msg):
-        topic = msg.topic
         string_message = str(msg.payload.decode('utf-8'))
         dict_message = json.loads(string_message)
 
-        with self.app.app_context():
-            module = Module.query.filter_by(mac=topic).first()
+        # Request result
+        if dict_message.get('result'):
+            self._handle_result_reports(dict_message)
 
-            if not module:
-                raise MQTTException(
-                    f'Špecifikovaný modul s mac nebol nájdený: {topic}',
-                    status_code=mqtt_status.MQTT_ERR_NOT_FOUND
-                )
+        # Value update asynchronously
+        elif dict_message.get('values'):
+            self._handle_periodical_value_reports(dict_message)
 
-            # Request result
-            if dict_message.get('result'):
-                module_ack_blocker = next(filter(lambda obj: obj.get('module_mac') == topic, self.ack_blocker), None)
-                module_ack_blocker['blocked'] = False
-                module_ack_blocker['message'] = dict_message
-
-            # Value update asynchronously
-            elif dict_message.get('values'):
-                values = dict_message.get('values')
-
-                for key, value in values.items():
-                    device = module.devices.filter_by(id=key)
-
-                    if not device:
-                        raise MQTTException(
-                            f'Špecifikovaný device nebol nájdený: {key}',
-                            status_code=mqtt_status.MQTT_ERR_NOT_FOUND
-                        )
-
-                    self.socketio.emit(topic, dict_message, namespace='/web_socket')
-                    logging.getLogger('root_logger').info(f'[SocketIO]: Posielaná správa: {string_message} na webový klient.')
-
-                module_db_blocker = next(filter(lambda obj: obj.get('module_mac') == topic, self.db_blocker), None)
-
-                if module_db_blocker.get('time') >= module_db_blocker.get('granularity'):
-                    logging.getLogger('root_logger').info(
-                        f'[PostgreSQL]: Vytvorená inštancia v histórii posielaných dát: {topic}'
-                    )
-                    ModuleNotification(module=module, message=json.dumps(values)).create()
-                    module_db_blocker['time'] = 0
-
-                module_db_blocker['time'] += 1
-
-            logging.getLogger('root_logger').info(f'[MQTT]: Message received: {string_message}')
+        logging.getLogger('root_logger').info(f'[MQTT]: Message received: {string_message}')
 
     def connect(self):
         self.client.connect(self.broker_host, self.broker_port, self.keep_alive)
@@ -135,7 +152,7 @@ class MqttClient(object):
         self.client.disconnect()
 
     def subscribe(self, name):
-        logging.getLogger('root_logger').info(f'[MQTT]: Subscribed to device: {name}.')
+        logging.getLogger('root_logger').info(f'[MQTT]: Subscribed to topic: {name}.')
         self.client.subscribe(name)
 
     def publish(self, mac, message):
@@ -143,35 +160,30 @@ class MqttClient(object):
         module_ack_blocker = next(filter(lambda obj: obj.get('module_mac') == mac, self.ack_blocker), None)
         module_ack_blocker['blocked'] = True
         module_ack_blocker['message'] = None
-        self.client.publish(mac, message)
-
-    def get_ack_block(self, mac):
-        module_ack_blocker = next(filter(lambda obj: obj.get('module_mac') == mac, self.ack_blocker), None)
-        return module_ack_blocker.get('blocked')
-
-    def get_ack_message(self, mac):
-        module_ack_blocker = next(filter(lambda obj: obj.get('module_mac') == mac, self.ack_blocker), None)
-        return module_ack_blocker.get('message')
+        return self.client.publish(mac, message)
 
     def send_message(self, mac: str, message: str):
-        self.publish(mac, message)
-
+        result = self.publish(mac, message)
         end_time = time.time() + self.timeout
 
-        while True:
-            module_ack_blocker = next(filter(lambda obj: obj.get('module_mac') == mac, self.ack_blocker), None)
+        if result.rc == mqtt.MQTT_ERR_QUEUE_SIZE:
+            raise ValueError('Message is not queued due to ERR_QUEUE_SIZE')
+        with result._condition:
+            while True:
+                module_ack_blocker = next(filter(lambda obj: obj.get('module_mac') == mac, self.ack_blocker), None)
 
-            if not module_ack_blocker.get('blocked'):
-                response = module_ack_blocker.get('message')
+                if not module_ack_blocker.get('blocked'):
+                    response = module_ack_blocker.get('message')
 
-                if response.get('result') == 'OK':
-                    logging.getLogger('root_logger').info(f'[MQTT]: ACK Message received.')
-                    return response
-                elif response.get('result') == 'ERROR':
-                    raise MQTTException(response.get('details'), status_code=mqtt_status.MQTT_ERR_NOT_SUPPORTED)
+                    if response.get('result') == 'OK':
+                        logging.getLogger('root_logger').info(f'[MQTT]: ACK Message received.')
+                        return response
+                    elif response.get('result') == 'ERROR':
+                        raise MQTTException(response.get('details'), status_code=mqtt_status.MQTT_ERR_NOT_SUPPORTED)
 
-            if time.time() < end_time:
-                return MQTTException('Daný modul neodpovedá.', status_code=mqtt_status.MQTT_ERR_UNKNOWN)
+                if time.time() > end_time:
+                    raise MQTTException('Daný modul neodpovedá.', status_code=mqtt_status.MQTT_ERR_UNKNOWN)
+                result._condition.wait(1)
 
 
 mqtt_client = MqttClient()
