@@ -10,6 +10,7 @@ class Module(StandardModel):
     module_device_type_id = db.Column(UUID(as_uuid=True), db.ForeignKey('module_device_types.id'))
 
     devices = db.relationship("Device", lazy='dynamic', back_populates="module")
+    module_notification = db.relationship("ModuleNotification", lazy='dynamic', back_populates="module")
     module_device_type = db.relationship("ModuleDeviceType", back_populates="modules")
 
     def summary(self) -> dict:
