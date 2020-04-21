@@ -2,6 +2,8 @@ import json
 import os
 import time
 import paho.mqtt.client as mqtt
+from core.models import Module
+from mqtt.emulator.module_emulator import ModuleEmulator
 
 
 class MqttClientEmulator(object):
@@ -11,6 +13,7 @@ class MqttClientEmulator(object):
         self.broker_port = None
         self.keep_alive = None
         self.timeout = None
+        self.modules = []
 
         self.client = mqtt.Client(client_id='brewmaster_client_emulator')
 
@@ -23,14 +26,31 @@ class MqttClientEmulator(object):
 
         self.client.on_message = self.on_message
 
-    def _handle_ack_result(self, topic):
-        response = {
-            "module_mac": topic,
-            "sequence_number": 123,
-            "result": "OK",
-            "details": ""
-        }
-        time.sleep(1)   # Just for time reserve (this code will be more complicated in future)
+    def generate_modules(self):
+        for module in Module.query.all():
+            module_emulator = ModuleEmulator(module.mac, self.app, self)
+            self.modules.append(module_emulator)
+            module_emulator.run()
+
+    def _handle_ack_result(self, topic, data):
+        module = next((index for index in self.modules if index.name == topic), None)
+
+        if module:
+            module.set_value(int(data.get('value')))
+
+            response = {
+                "module_mac": topic,
+                "sequence_number": 123,
+                "result": "OK",
+                "details": ""
+            }
+        else:
+            response = {
+                "module_mac": topic,
+                "sequence_number": 123,
+                "result": "ERROR",
+                "details": "Module does not exist!!!"
+            }
         self.publish('brewmaster-backend', json.dumps(response))
 
     def _handle_err_result(self, topic):
@@ -60,7 +80,7 @@ class MqttClientEmulator(object):
 
         # Request result
         if dict_message.get('device_uuid'):
-            self._handle_ack_result(topic)
+            self._handle_ack_result(topic, dict_message)
 
     def connect(self):
         self.client.connect(self.broker_host, self.broker_port, self.keep_alive)
