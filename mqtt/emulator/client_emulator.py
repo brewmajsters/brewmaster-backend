@@ -13,7 +13,7 @@ class MqttClientEmulator(object):
         self.broker_port = None
         self.keep_alive = None
         self.timeout = None
-        self.modules = []
+        self.module_emulators = []
 
         self.client = mqtt.Client(client_id='brewmaster_client_emulator')
 
@@ -29,14 +29,18 @@ class MqttClientEmulator(object):
     def generate_modules(self):
         for module in Module.query.all():
             module_emulator = ModuleEmulator(module.mac, self.app, self)
-            self.modules.append(module_emulator)
+            self.module_emulators.append(module_emulator)
             module_emulator.run()
 
     def _handle_ack_result(self, topic, data):
-        module = next((index for index in self.modules if index.name == topic), None)
+        module = None
+
+        for module_emulator in self.module_emulators:
+            if module_emulator.mac == topic:
+                module = module_emulator
 
         if module:
-            module.set_value(int(data.get('value')))
+            module.set_value(data)
 
             response = {
                 "module_mac": topic,
