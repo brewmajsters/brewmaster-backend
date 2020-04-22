@@ -1,34 +1,14 @@
 import json
-from flask import Blueprint, render_template, request
+from flask import Blueprint, request
 from werkzeug.datastructures import ImmutableMultiDict
 from api import http_status
 from api.errors import ApiException, ValidationException
 from api.forms.module_form import ModuleSetValueForm
 from core.models import Module, DeviceTypeDatapoint, Protocol, Device, ModuleDeviceType, DataType
 from mqtt.client import mqtt_client
+from mqtt.errors import MQTTException
 
 blueprint = Blueprint('blueprint', __name__, template_folder='templates', static_folder='static')
-
-
-@blueprint.route('/test_mqtt', methods=['GET'])
-def test_mqtt():
-    name = "mqtt_sensor"
-    message = "mqtt_test"
-    mqtt_client.subscribe(name)
-    mqtt_client.publish(name, message)
-    return f'published to: {name} with message: {message}'
-
-
-@blueprint.route('/test_web', methods=['GET'])
-def test_all():
-    return render_template('test.html')
-
-
-@blueprint.route('/test_cors', methods=['GET'])
-def test_cors():
-    return json.dumps(
-        {'success': True}
-    ), 200, {'ContentType': 'application/json'}
 
 
 # DEVICE_TYPE_DATAPOINT
@@ -200,9 +180,18 @@ def set_value_module(module_id):
     if not device:
         raise ApiException('Dané zariadenie sa nepodarilo nájsť.', status_code=http_status.HTTP_404_NOT_FOUND)
 
-    mqtt_client.publish(module.mac, json.dumps(data))
+    data['device_uuid'] = data['device_id']
+    del data['device_id']
 
-    return json.dumps(data), 200, {'ContentType': 'application/json'}
+    # TODO: Ziskat sequence number (odniekial)
+    data['sequence_number'] = 123
+
+    try:
+        response = mqtt_client.send_message(module.mac, json.dumps(data))
+    except MQTTException as e:
+        raise ApiException(e.message, status_code=http_status.HTTP_400_BAD_REQUEST, previous=e)
+
+    return json.dumps(response), 200, {'ContentType': 'application/json'}
 
 
 @blueprint.route('/modules/<module_id>/config', methods=['POST'])

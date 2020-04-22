@@ -10,7 +10,7 @@ Backend for brewmaster project.
 - [PostgreSQL](https://www.postgresql.org/download/) (recommended version 11.5)
 - [Git](https://git-scm.com/downloads)
 
-### Downloading code base
+### 1. Downloading code base
 
 The Git installation example below will download the codebase project and run the pipenv install. Pipenv
 will create a virtual environment in which will install all project dependencies.
@@ -21,13 +21,18 @@ cd brewmaster-backend
 pipenv install
 ```
 
-### Create environment variables file .env
+### 2. Create environment variables file .env
 
 - In project root is located file `.env.example`.
 - Rename this file to `.env`.
 - Configure variables in `.env` file according to your needs.
 
-### Setup postgres DB with timescale extension
+(Pay attention to variable: `RUN_ENVIRONMENT`. If you set that variable to value `development`,
+this configuration setting will create software emulated modules for testing purposes.
+This setting should be activated only if you can't communicate with real devices and HW components.
+For production purposes you should set this variable to value `production`.)
+
+### 3. Setup postgres DB with timescale extension
 1. Download [PostgreSQL](https://www.postgresql.org/download/) (Our tested and working Postgresql server with timescale extension is version 11.5).
 2. Install Postgresql according to manual on official web page.
 3. Download [TimeScaleDB](https://docs.timescale.com/latest/getting-started/installation) extension for Postgresql.
@@ -42,11 +47,23 @@ pipenv install
 > `ERROR: could not load library "C:/Program Files/PostgreSQL/11/lib/timescaledb-1.5.0.dll": The specified module could not be found.`
 > Issue was resolved on [Github](https://github.com/timescale/timescaledb/issues/1398).
 
-### Project startup
+### 4. Activating environment and installing project dependencies
 
 1. Activate environment `pipenv shell`.
 2. Run download dependencies from pipfile `pipenv update`.
-3. Run command in project root `python wsgi.py`.
+
+### 5. Populate DB with testing data
+
+- If you only wish to create empty DB with no testing data skip this step.
+
+1. Run server from project root path with command: `python wsgi.py` (only for DB table recreating purposes)
+2. After the server start-up is finished, you need to look if DB tables are created successfully.
+3. Stop the server.
+4. Run command for populating DB tables with testing data: `flask seed run`
+
+### 6. Project startup
+
+1. Run command in project root `python wsgi.py`.
 
 #### Dockerfile startup
 
@@ -73,6 +90,7 @@ and we are using for maintaining codebase technique git-flow.
     - **master** branch always contains stable version of source code.
     - **develop** branch containing changes implemented in specific sprint.
     - **feature/** branches containing implementations of specific issues/features.
+    - **fix/** branches containing error corrections.
 
 #### Testing
 

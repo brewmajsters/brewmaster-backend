@@ -27,3 +27,15 @@
 - **Feature**: Implemented testing DB seed.
 - **Feature**: Implemented communication with modules via MQTT according to MQTT API specification.
 - **Change**: Changed Sensor emulator according to MQTT specification.
+
+## 0.6.0: 22.04.2020
+
+- **Feature**: Implemented mqtt ack message blocker.
+- **Feature**: Added new env variables to .env.example file.
+- **Feature**: Implemented possibility to change project environment.
+- **Change**: Deleted testing and unused endpoints.
+- **Change**: Deleted unused testing templates and static files.
+- **Change**: Made changes in README.md file according to new configuration possibilities.
+- **Change**: Changed format of parsing data according to MQTT API docs.
+- **Change**: Changed Sensor model to ModuleNotification.
+- **Fix**: Fixed setting value to device (distinction between module and device).
