@@ -7,56 +7,69 @@ from core.models import Module
 
 
 class ModuleEmulator(object):
-    def __init__(self, name, app, mqtt_client):
+    def __init__(self, mac, app, mqtt_client):
         self.mqtt_client = mqtt_client
-        self.thread = Thread()
-        self.thread_stop_event = Event()
-        self.name = name
+        self.mac = mac
         self.app = app
         self.module_thread = None
+        self.thread_stop_event = Event()
 
     def run(self):
-        if not self.thread.is_alive():
-            self.module_thread = RandomThread(self.name, self.app, self.thread_stop_event, self.mqtt_client)
+        if not self.module_thread or not self.module_thread.is_alive():
+            # Creating module thread
+            self.module_thread = ModuleThread(self.mac, self.app, self.thread_stop_event, self.mqtt_client)
             self.module_thread.start()
-            logging.getLogger('root_logger').info(f'[EMULATOR {self.name}]: Thread started.')
+
+            logging.getLogger('root_logger').info(f'[EMULATOR {self.mac}]: THREAD STARTED.')
 
     def stop(self):
-        if self.thread.isAlive():
+        if self.module_thread.isAlive():
             self.thread_stop_event.set()
-        logging.getLogger('root_logger').info(f'[EMULATOR {self.name}]: Thread ended.')
+        logging.getLogger('root_logger').info(f'[EMULATOR {self.mac}]: THREAD STOPPED.')
 
-    def set_value(self, value):
-        self.module_thread.set_value(value)
+    def set_value(self, data):
+        self.module_thread.set_value(data)
 
 
-class RandomThread(Thread):
+class ModuleThread(Thread):
     def __init__(self, mac, app, thread_stop_event, mqtt_client):
         self.thread_stop_event = thread_stop_event
         self.app = app
-        self.module_mac = mac
-        self.value = random.randint(1, 10)
+
+        self.module = Module.query.filter_by(mac=mac).first()
+        self.devices = self._init_devices()
+
         self.mqtt_client = mqtt_client
         self.mqtt_client.subscribe(mac)
-        super(RandomThread, self).__init__()
 
-    def set_value(self, value):
-        self.value = value
+        super(ModuleThread, self).__init__()
+
+    def _init_devices(self):
+        devices = self.module.devices
+        return [{'device': device, 'value': random.randint(1, 10)} for device in devices]
+
+    def set_value(self, data):
+        for device in self.devices:
+            emulator_device_uuid = str(device.get('device').id)
+            data_device_uuid = data.get('device_uuid')
+
+            if emulator_device_uuid == data_device_uuid:
+                device['value'] = data.get('value')
 
     def run(self):
         while not self.thread_stop_event.isSet():
             data = {
-                "module_mac": self.module_mac,
+                "module_mac": self.module.mac,
                 "values": {},
             }
 
             with self.app.app_context():
-                module = Module.query.filter_by(mac=self.module_mac).first()
-                devices = module.devices
+                for device in self.devices:
+                    device_id = str(device.get('device').id)
+                    device_value = device.get('value')
 
-                for device in devices:
-                    data['values'][str(device.id)] = {
-                        'value': random.randint((self.value * 100) - 10, (self.value * 100) + 10) / 100,
+                    data['values'][device_id] = {
+                        'value': random.randint((device_value * 100) - 10, (device_value * 100) + 10) / 100,
                         'unit': 'value',
                         'writable': True
                     }
