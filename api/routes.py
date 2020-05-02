@@ -108,6 +108,7 @@ def list_modules():
 @blueprint.route('/modules/<module_id>', methods=['GET'])
 def get_module(module_id):
     module = Module.query.filter(Module.id == module_id).first()
+
     return json.dumps(
         module.summary()
     ), 200, {'ContentType': 'application/json'}
