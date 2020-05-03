@@ -39,3 +39,9 @@
 - **Change**: Changed format of parsing data according to MQTT API docs.
 - **Change**: Changed Sensor model to ModuleNotification.
 - **Fix**: Fixed setting value to device (distinction between module and device).
+
+## 0.7.0: 05.03.2020
+
+- **Feature**: Added devices list to module list/get endpoint.
+- **Fix**: Fixed bad parsing string in emulator in set_module_value endpoint.
+- **Change**: Changed channel name in socketio.
