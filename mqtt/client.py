@@ -78,7 +78,7 @@ class MqttClient(object):
                         status_code=mqtt_status.MQTT_ERR_NOT_FOUND
                     )
 
-                self.socketio.emit(module_mac, data, namespace='/web_socket')
+                self.socketio.emit(str(module.id), data, namespace='/web_socket')
                 logging.getLogger('root_logger').info(f'[SocketIO]: Posielaná správa: {data} na webový klient.')
 
             module_db_blocker = next(filter(lambda obj: obj.get('module_mac') == module_mac, self.db_blocker), None)

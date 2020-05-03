@@ -67,13 +67,13 @@ For production purposes you should set this variable to value `production`.)
 
 #### Dockerfile startup
 
-**DEPENDENCY:** Running TimescaleDB instance as docker: [guide](https://github.com/brewmajsters/timescaledb-docker)
+**DEPENDENCY:** Running TimescaleDB instance ([docker](https://github.com/brewmajsters/timescaledb-docker), [ansible](https://github.com/brewmajsters/ansible-role-timescaledb))
 
 1. Build from the Dockerfile: `docker build -t backend:latest .`
 2. Run the container from newly created image:
-    - available environment variables: `TIMESCALEDB_HOST` `TIMESCALEDB_PORT` `TIMESCALEDB_NAME` `TIMESCALEDB_USER` `TIMESCALEDB_PASSWORD`
-    - retrieve the timescaldb docker instance ip address: `docker inspect <TIMESCALEDB-DOCKER-ID> | jq -r '.[0].NetworkSettings.Networks.bridge.IPAddress'`
-    - e.g. `docker run -d --name backend -p 5000:5000 -e TIMESCALEDB_HOST=<IP> -e TIMESCALEDB_PASSWORD=<PASSWD> backend`
+    - available environment variables are identical to those in [.env file](./.env.example)
+    - (in case fo docker TimeScaleDB) retrieve the timescaldb docker instance ip address: `docker inspect <TIMESCALEDB-DOCKER-ID> | jq -r '.[0].NetworkSettings.Networks.bridge.IPAddress'`
+    - e.g. `docker run -d --name backend -p 5000:5000 -e DATABASE_HOST=<IP> -e DATABASE_PASSWORD=<PASSWD> backend`
 
 ## Implementation and Maintaining
 

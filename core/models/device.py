@@ -21,3 +21,11 @@ class Device(StandardModel):
             address=self.address,
             poll_rate=self.poll_rate,
         )
+
+    def module_summary(self) -> dict:
+        return dict(
+            id=str(self.id),
+            uuid=str(self.uuid),
+            address=self.address,
+            poll_rate=self.poll_rate,
+        )

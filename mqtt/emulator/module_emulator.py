@@ -60,7 +60,7 @@ class ModuleThread(Thread):
         while not self.thread_stop_event.isSet():
             data = {
                 "module_mac": self.module.mac,
-                "values": {},
+                "values": {}
             }
 
             with self.app.app_context():
@@ -69,7 +69,7 @@ class ModuleThread(Thread):
                     device_value = device.get('value')
 
                     data['values'][device_id] = {
-                        'value': random.randint((device_value * 100) - 10, (device_value * 100) + 10) / 100,
+                        'value': random.randint((int(device_value) * 100) - 10, (int(device_value) * 100) + 10) / 100,
                         'unit': 'value',
                         'writable': True
                     }
