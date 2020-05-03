@@ -18,4 +18,5 @@ class Module(StandardModel):
             id=str(self.id),
             module_device_type_id=str(self.module_device_type_id) if self.module_device_type_id else None,
             mac=self.mac,
+            devices=[device.module_summary() for device in self.devices]
         )
