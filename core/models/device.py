@@ -20,6 +20,8 @@ class Device(StandardModel):
             uuid=str(self.uuid),
             address=self.address,
             poll_rate=self.poll_rate,
+            datapoints=[datapoint.summary() for datapoint
+                        in self.module.module_device_type.device_type_datapoints]
         )
 
     def module_summary(self) -> dict:

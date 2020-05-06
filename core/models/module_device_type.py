@@ -11,7 +11,7 @@ class ModuleDeviceType(StandardModel):
     code = db.Column(db.String(100), nullable=True)
     protocol_id = db.Column(UUID(as_uuid=True), db.ForeignKey('protocols.id'))
 
-    device_type_datapoints = db.relationship("DeviceTypeDatapoint", back_populates="module_device_type")
+    device_type_datapoints = db.relationship("DeviceTypeDatapoint", lazy='dynamic', back_populates="module_device_type")
     protocol = db.relationship("Protocol", back_populates="module_device_types")
     modules = db.relationship("Module", back_populates="module_device_type")
 

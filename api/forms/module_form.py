@@ -10,5 +10,5 @@ class ModuleSetValueForm(FlaskForm):
             UUID(message='Hodnota nie je vo formáte UUID.')
         ]
     )
-    data_point = StringField('data_point', validators=[DataRequired(message='Hodnota data_point je povinná.')])
+    datapoint = StringField('data_point', validators=[DataRequired(message='Hodnota datapoint je povinná.')])
     value = StringField('value', validators=[DataRequired(message='Hodnota value je povinná.')])
