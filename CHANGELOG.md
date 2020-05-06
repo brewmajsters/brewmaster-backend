@@ -40,8 +40,15 @@
 - **Change**: Changed Sensor model to ModuleNotification.
 - **Fix**: Fixed setting value to device (distinction between module and device).
 
-## 0.7.0: 05.03.2020
+## 0.7.0: 03.05.2020
 
 - **Feature**: Added devices list to module list/get endpoint.
 - **Fix**: Fixed bad parsing string in emulator in set_module_value endpoint.
 - **Change**: Changed channel name in socketio.
+
+## 0.7.1: 06.05.2020
+
+- **Feature**: Added datapoints to module structure.
+- **Fix**: Renamed data_point attribute to datapoint in set_device endpoint.
+- **Fix**: The device_uuid argument has since now uuid attribute of device not id.
+- **Fix**: Added check for datapoint id (if exist) in set_device endpoint.
