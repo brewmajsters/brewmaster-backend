@@ -49,7 +49,7 @@ class ModuleThread(Thread):
         return [{
             'device': device,
             'value': random.randint(1, 10),
-            "datapoints": Device.query.filter_by(id=device.id).first().get_device_datapoints()
+            'datapoints': [datapoint.summary() for datapoint in device.get_device_datapoints()]
         } for device in devices]
 
     def set_value(self, data):
@@ -63,22 +63,22 @@ class ModuleThread(Thread):
     def run(self):
         while not self.thread_stop_event.isSet():
             data = {
-                "module_mac": self.module.mac,
-                "values": {}
+                'module_mac': self.module.mac,
+                'values': {}
             }
 
             with self.app.app_context():
                 for device in self.devices:
-                    datapoints = device.get('datapoints')
                     device_id = str(device.get('device').id)
+                    datapoints = device.get('datapoints')
                     device_value = device.get('value')
 
-                    data['values'][device_id] = {
+                    data['values'][device_id] = [
                         {
-                            datapoint.code:
+                            str(datapoint.get('code')):
                                 random.randint((int(device_value) * 100) - 10, (int(device_value) * 100) + 10) / 100
                         } for datapoint in datapoints
-                    }
+                    ]
 
             self.mqtt_client.publish('brewmaster-backend', json.dumps(data))
             time.sleep(1)
