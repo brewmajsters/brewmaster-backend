@@ -46,7 +46,11 @@ class ModuleThread(Thread):
 
     def _init_devices(self):
         devices = self.module.devices
-        return [{'device': device, 'value': random.randint(1, 10)} for device in devices]
+        return [{
+            'device': device,
+            'value': random.randint(1, 10),
+            "datapoints": device.get_device_datapoints()
+        } for device in devices]
 
     def set_value(self, data):
         for device in self.devices:
@@ -65,7 +69,7 @@ class ModuleThread(Thread):
 
             with self.app.app_context():
                 for device in self.devices:
-                    datapoints = device.get('device').get_device_datapoints()
+                    datapoints = device.get('datapoints')
                     device_id = str(device.get('device').id)
                     device_value = device.get('value')
 
