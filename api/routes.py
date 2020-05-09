@@ -178,11 +178,15 @@ def set_value_module(module_id):
         raise ApiException('Daný modul sa nepodarilo nájsť.', status_code=http_status.HTTP_404_NOT_FOUND)
 
     device = module.devices.filter_by(id=data.get('device_id')).first()
+    del data['device_id']
     if not device:
         raise ApiException('Dané zariadenie sa nepodarilo nájsť.', status_code=http_status.HTTP_404_NOT_FOUND)
 
-    data['device_uuid'] = data['device_id']
-    del data['device_id']
+    datapoint = module.module_device_type.device_type_datapoints.filter_by(code=data.get('datapoint')).first()
+    if not datapoint:
+        raise ApiException('Daný datapoint sa nepodarilo nájsť.', status_code=http_status.HTTP_404_NOT_FOUND)
+
+    data['device_uuid'] = str(device.uuid)
 
     # TODO: Ziskat sequence number (odniekial)
     data['sequence_number'] = 123
