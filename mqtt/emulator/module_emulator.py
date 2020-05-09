@@ -3,7 +3,7 @@ import logging
 import random
 import time
 from threading import Thread, Event
-from core.models import Module
+from core.models import Module, Device
 
 
 class ModuleEmulator(object):
@@ -49,7 +49,7 @@ class ModuleThread(Thread):
         return [{
             'device': device,
             'value': random.randint(1, 10),
-            "datapoints": device.get_device_datapoints()
+            "datapoints": Device.query.filter_by(id=device.id).first().get_device_datapoints()
         } for device in devices]
 
     def set_value(self, data):
