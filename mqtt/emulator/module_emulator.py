@@ -65,13 +65,15 @@ class ModuleThread(Thread):
 
             with self.app.app_context():
                 for device in self.devices:
+                    datapoints = device.get('device').get_device_datapoints()
                     device_id = str(device.get('device').id)
                     device_value = device.get('value')
 
                     data['values'][device_id] = {
-                        'value': random.randint((int(device_value) * 100) - 10, (int(device_value) * 100) + 10) / 100,
-                        'unit': 'value',
-                        'writable': True
+                        {
+                            datapoint.code:
+                                random.randint((int(device_value) * 100) - 10, (int(device_value) * 100) + 10) / 100
+                        } for datapoint in datapoints
                     }
 
             self.mqtt_client.publish('brewmaster-backend', json.dumps(data))
