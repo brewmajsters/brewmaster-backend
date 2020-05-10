@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField
+from wtforms import StringField, IntegerField
 from wtforms.validators import DataRequired, UUID
 
 
@@ -10,5 +10,5 @@ class ModuleSetValueForm(FlaskForm):
             UUID(message='Hodnota nie je vo formáte UUID.')
         ]
     )
-    datapoint = StringField('data_point', validators=[DataRequired(message='Hodnota datapoint je povinná.')])
-    value = StringField('value', validators=[DataRequired(message='Hodnota value je povinná.')])
+    datapoint = "ANGLE"  # StringField('data_point', validators=[DataRequired(message='Hodnota datapoint je povinná.')])
+    value = IntegerField('value')  # StringField('value', validators=[DataRequired(message='Hodnota value je povinná.')])
