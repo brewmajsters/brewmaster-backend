@@ -21,6 +21,12 @@ class MqttClient(object):
         self.timeout = None
         self.db_blocker = []
         self.ack_blocker = []
+        self.subscribed_topics = [
+            'MODULE_ID', 'MODULE_DISCONNECT', 'MODULE_CONFIG_UPDATE', 'VALUE_UPDATE', 'REQUEST_RESULT'
+        ]
+        self.published_topics = [
+            'REQUEST', 'UPDATE_FW', 'SET_VALUE', 'SET_CONFIG', 'ALL_MODULES'
+        ]
 
         self.client = mqtt.Client(client_id=os.getenv('MQTT_CLIENT_NAME'))
 
@@ -38,7 +44,8 @@ class MqttClient(object):
         self.client.on_message = self.on_message
 
     def start_mqtt_connections(self):
-        mqtt_client.subscribe('brewmaster-backend')
+        for topic in self.subscribed_topics:
+            mqtt_client.subscribe(topic)
 
         modules = Module.query.all()
 
@@ -108,6 +115,15 @@ class MqttClient(object):
             module_ack_blocker['blocked'] = False
             module_ack_blocker['message'] = data
 
+    def _handle_module_config_update(self, data):
+        pass
+
+    def _handle_module_discovery(self, data):
+        pass
+
+    def _handle_module_disconnect(self, data):
+        pass
+
     def on_log(self, clinet, userdata, level, buf):
         logging.getLogger('root_logger').info(f'[MQTT]: Connecting to broker {self.broker_host}: {buf}')
 
@@ -130,16 +146,26 @@ class MqttClient(object):
             )
 
     def on_message(self, client, userdata, msg):
+        topic = msg.topic
         string_message = str(msg.payload.decode('utf-8'))
         dict_message = json.loads(string_message)
 
         # Request result
-        if dict_message.get('result'):
+        if topic == 'REQUEST_RESULT':
             self._handle_result_reports(dict_message)
 
         # Value update asynchronously
-        elif dict_message.get('values'):
+        elif topic == 'VALUE_UPDATE':
             self._handle_periodical_value_reports(dict_message)
+
+        elif topic == 'MODULE_CONFIG_UPDATE':
+            self._handle_module_config_update(dict_message)
+
+        elif topic == 'MODULE_ID':
+            self._handle_module_discovery(dict_message)
+
+        elif topic == 'MODULE_DISCONNECT':
+            self._handle_module_disconnect(dict_message)
 
         logging.getLogger('root_logger').info(f'[MQTT]: Message received: {string_message}')
 
@@ -155,15 +181,22 @@ class MqttClient(object):
         logging.getLogger('root_logger').info(f'[MQTT]: Subscribed to topic: {name}.')
         self.client.subscribe(name)
 
-    def publish(self, mac, message):
-        logging.getLogger('root_logger').info(f'[MQTT]: Published message {message} to modul {mac}.')
+    def publish(self, mac, topic, message):
+        logging.getLogger('root_logger').info(f'[MQTT]: Published message {message} to topic {topic}.')
         module_ack_blocker = next(filter(lambda obj: obj.get('module_mac') == mac, self.ack_blocker), None)
         module_ack_blocker['blocked'] = True
         module_ack_blocker['message'] = None
-        return self.client.publish(mac, message)
+        return self.client.publish(topic, message)
 
-    def send_message(self, mac: str, message: str):
-        result = self.publish(mac, message)
+    def send_message(self, mac: str, topic: str, message: str):
+        if topic in self.published_topics:
+            topic = f'{mac}/{topic}' if mac else topic
+        else:
+            raise MQTTException(
+                'Daný topic nie je medzi povolenými topicmi.', status_code=mqtt_status.MQTT_ERR_NOT_FOUND
+            )
+
+        result = self.publish(mac, topic, message)
         end_time = time.time() + self.timeout
 
         if result.rc == mqtt.MQTT_ERR_QUEUE_SIZE:

@@ -75,6 +75,9 @@ class BaseModel(db.Model):
                 previous=e
             )
 
+    def save(self):
+        db.session.commit()
+
     @abstractmethod
     def summary(self) -> dict:
         pass
