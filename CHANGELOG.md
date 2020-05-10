@@ -52,3 +52,10 @@
 - **Fix**: Renamed data_point attribute to datapoint in set_device endpoint.
 - **Fix**: The device_uuid argument has since now uuid attribute of device not id.
 - **Fix**: Added check for datapoint id (if exist) in set_device endpoint.
+
+## 0.7.2: 10.05.2020
+
+- **Feature**: Implemented set_config endpoint.
+- **Fix**: Fixed topics to subscribe and publish.
+- **Fix**: Fixed emulators with changed topics.
+- **Fix**: Fixed parsing emulator set_value data.

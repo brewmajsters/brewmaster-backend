@@ -1,4 +1,7 @@
+import typing
+
 from sqlalchemy.dialects.postgresql import UUID
+
 from core.models.abstract.base_model import db
 from core.models.abstract.standard_model import StandardModel
 
@@ -13,6 +16,9 @@ class Device(StandardModel):
 
     module = db.relationship("Module", back_populates="devices")
 
+    def get_device_datapoints(self) -> typing.List:
+        return self.module.module_device_type.device_type_datapoints
+
     def summary(self) -> dict:
         return dict(
             id=str(self.id),
@@ -21,7 +27,7 @@ class Device(StandardModel):
             address=self.address,
             poll_rate=self.poll_rate,
             datapoints=[datapoint.summary() for datapoint
-                        in self.module.module_device_type.device_type_datapoints]
+                        in self.get_device_datapoints()]
         )
 
     def module_summary(self) -> dict:

@@ -30,6 +30,9 @@ class ModuleEmulator(object):
     def set_value(self, data):
         self.module_thread.set_value(data)
 
+    def set_config(self, data):
+        self.module_thread.set_config(data)
+
 
 class ModuleThread(Thread):
     def __init__(self, mac, app, thread_stop_event, mqtt_client):
@@ -40,39 +43,62 @@ class ModuleThread(Thread):
         self.devices = self._init_devices()
 
         self.mqtt_client = mqtt_client
-        self.mqtt_client.subscribe(mac)
+
+        self.mqtt_client.subscribe(f'{mac}/REQUEST')
+        self.mqtt_client.subscribe(f'{mac}/UPDATE_FW')
+        self.mqtt_client.subscribe(f'{mac}/SET_VALUE')
+        self.mqtt_client.subscribe(f'{mac}/SET_CONFIG')
+        self.mqtt_client.subscribe(f'{mac}/ALL_MODULES')
 
         super(ModuleThread, self).__init__()
 
     def _init_devices(self):
         devices = self.module.devices
-        return [{'device': device, 'value': random.randint(1, 10)} for device in devices]
+        return [{
+            'device': device,
+            'value': random.randint(1, 10),
+            'poll_rate': None,
+            'address': None,
+            'datapoints': [datapoint.summary() for datapoint in device.get_device_datapoints()]
+        } for device in devices]
 
     def set_value(self, data):
         for device in self.devices:
-            emulator_device_uuid = str(device.get('device').id)
+            emulator_device_uuid = str(device.get('device').uuid)
             data_device_uuid = data.get('device_uuid')
 
             if emulator_device_uuid == data_device_uuid:
                 device['value'] = data.get('value')
 
+    def set_config(self, data):
+        for device in self.devices:
+            emulator_device_uuid = str(device.get('device').uuid)
+
+            if emulator_device_uuid in data:
+                device_data = data.get(emulator_device_uuid)
+
+                # TODO: Nejako zasimulovat nastavenie configu
+
     def run(self):
         while not self.thread_stop_event.isSet():
             data = {
-                "module_mac": self.module.mac,
-                "values": {}
+                'module_mac': self.module.mac,
+                'values': {}
             }
 
             with self.app.app_context():
                 for device in self.devices:
                     device_id = str(device.get('device').id)
+                    datapoints = device.get('datapoints')
                     device_value = device.get('value')
 
-                    data['values'][device_id] = {
-                        'value': random.randint((int(device_value) * 100) - 10, (int(device_value) * 100) + 10) / 100,
-                        'unit': 'value',
-                        'writable': True
-                    }
+                    datapoint_dict = {}
+                    for datapoint in datapoints:
+                        datapoint_dict[str(datapoint.get('code'))] = random.randint(
+                                (int(device_value) * 100) - 10, (int(device_value) * 100) + 10
+                            ) / 100
 
-            self.mqtt_client.publish('brewmaster-backend', json.dumps(data))
+                    data['values'][device_id] = datapoint_dict
+
+            self.mqtt_client.publish('VALUE_UPDATE', json.dumps(data))
             time.sleep(1)

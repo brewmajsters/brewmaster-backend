@@ -3,7 +3,8 @@ from flask import Blueprint, request
 from werkzeug.datastructures import ImmutableMultiDict
 from api import http_status
 from api.errors import ApiException, ValidationException
-from api.forms.module_form import ModuleSetValueForm
+from api.forms.module_set_config import ModuleSetConfigForm
+from api.forms.module_set_value import ModuleSetValueForm
 from core.models import Module, DeviceTypeDatapoint, Protocol, Device, ModuleDeviceType, DataType
 from mqtt.client import mqtt_client
 from mqtt.errors import MQTTException
@@ -192,7 +193,7 @@ def set_value_module(module_id):
     data['sequence_number'] = 123
 
     try:
-        response = mqtt_client.send_message(module.mac, json.dumps(data))
+        response = mqtt_client.send_message(module.mac, 'SET_VALUE', json.dumps(data))
     except MQTTException as e:
         raise ApiException(e.message, status_code=http_status.HTTP_400_BAD_REQUEST, previous=e)
 
@@ -202,14 +203,34 @@ def set_value_module(module_id):
 @blueprint.route('/modules/<module_id>/config', methods=['POST'])
 def config_module(module_id):
     json_data = ImmutableMultiDict(request.get_json(force=True))
-    form = ModuleSetValueForm(json_data, meta={'csrf': False})
+    form = ModuleSetConfigForm(json_data, meta={'csrf': False})
 
     if not form.validate():
         raise ValidationException(form.errors)
+
+    request_data = form.data
 
     module = Module.query.get(module_id)
     if not module:
         raise ApiException('Daný modul sa nepodarilo nájsť.', status_code=http_status.HTTP_404_NOT_FOUND)
 
-    data = form.data
-    return json.dumps(data), 200, {'ContentType': 'application/json'}
+    device = module.devices.filter_by(id=request_data.get('device_id')).first()
+    if not device:
+        raise ApiException('Dané zariadenie sa nepodarilo nájsť.', status_code=http_status.HTTP_404_NOT_FOUND)
+
+    device.poll_rate = request_data.get('poll_rate')
+    device.save()
+
+    data = {
+        str(device.uuid): {
+            'address': request_data.get('address'),
+            'poll_rate': request_data.get('poll_rate')
+        }
+    }
+
+    try:
+        response = mqtt_client.send_message(module.mac, 'SET_CONFIG', json.dumps(data))
+    except MQTTException as e:
+        raise ApiException(e.message, status_code=http_status.HTTP_400_BAD_REQUEST, previous=e)
+
+    return json.dumps(response), 200, {'ContentType': 'application/json'}

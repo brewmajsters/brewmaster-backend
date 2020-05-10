@@ -1,6 +1,5 @@
 import json
 import os
-import time
 import paho.mqtt.client as mqtt
 from core.models import Module
 from mqtt.emulator.module_emulator import ModuleEmulator
@@ -32,59 +31,72 @@ class MqttClientEmulator(object):
             self.module_emulators.append(module_emulator)
             module_emulator.run()
 
-    def _handle_ack_result(self, topic, data):
+    def _handle_set_module_value(self, mac, data):
         module = None
 
         for module_emulator in self.module_emulators:
-            if module_emulator.mac == topic:
+            if module_emulator.mac == mac:
                 module = module_emulator
 
         if module:
             module.set_value(data)
 
             response = {
-                "module_mac": topic,
+                "module_mac": mac,
                 "sequence_number": 123,
                 "result": "OK",
                 "details": ""
             }
         else:
             response = {
-                "module_mac": topic,
+                "module_mac": mac,
                 "sequence_number": 123,
                 "result": "ERROR",
                 "details": "Module does not exist!!!"
             }
-        self.publish('brewmaster-backend', json.dumps(response))
+        self.publish('REQUEST_RESULT', json.dumps(response))
 
-    def _handle_err_result(self, topic):
-        response = {
-            "module_mac": topic,
-            "sequence_number": 123,
-            "result": "ERROR",
-            "details": "Some unexpected error occurred"
-        }
-        time.sleep(1)   # Just for time reserve (this code will be more complicated in future)
-        self.publish('brewmaster-backend', json.dumps(response))
+    def _handle_set_module_config(self, mac, data):
+        module = None
 
-    def _handle_no_result(self, topic):
-        time.sleep(20)
-        response = {
-            "module_mac": topic,
-            "sequence_number": 123,
-            "result": "OK",
-            "details": ""
-        }
-        self.publish('brewmaster-backend', json.dumps(response))
+        for module_emulator in self.module_emulators:
+            if module_emulator.mac == mac:
+                module = module_emulator
+
+        if module:
+            module.set_config(data)
+
+            response = {
+                "module_mac": mac,
+                "sequence_number": 123,
+                "result": "OK",
+                "details": ""
+            }
+        else:
+            response = {
+                "module_mac": mac,
+                "sequence_number": 123,
+                "result": "ERROR",
+                "details": "Module does not exist!!!"
+            }
+        self.publish('REQUEST_RESULT', json.dumps(response))
 
     def on_message(self, client, userdata, msg):
         topic = msg.topic
+
+        if '/' in topic:
+            mac = topic.split('/')[0]
+        else:
+            mac = None
+
         string_message = str(msg.payload.decode('utf-8'))
         dict_message = json.loads(string_message)
 
         # Request result
-        if dict_message.get('device_uuid'):
-            self._handle_ack_result(topic, dict_message)
+        if 'SET_VALUE' in topic:
+            self._handle_set_module_value(mac, dict_message)
+        elif 'SET_CONFIG' in topic:
+            self._handle_set_module_config(mac, dict_message)
 
     def connect(self):
         self.client.connect(self.broker_host, self.broker_port, self.keep_alive)
