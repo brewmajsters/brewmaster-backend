@@ -116,7 +116,20 @@ class MqttClient(object):
             module_ack_blocker['message'] = data
 
     def _handle_module_config_update(self, data):
-        pass
+        with self.app.app_context():
+            module_mac = data.get('module_mac')
+
+            module = Module.query.filter_by(mac=module_mac).first()
+
+            if not module:
+                raise MQTTException(
+                    f'Špecifikovaný modul s mac nebol nájdený: {module_mac}',
+                    status_code=mqtt_status.MQTT_ERR_NOT_FOUND
+                )
+
+            module_ack_blocker = next(filter(lambda obj: obj.get('module_mac') == module_mac, self.ack_blocker), None)
+            module_ack_blocker['blocked'] = False
+            module_ack_blocker['message'] = data
 
     def _handle_module_discovery(self, data):
         pass
