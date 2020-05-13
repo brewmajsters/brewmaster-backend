@@ -208,7 +208,10 @@ class MqttClient(object):
                 if not module_ack_blocker.get('blocked'):
                     response = module_ack_blocker.get('message')
 
-                    if response.get('result') == 'OK':
+                    if response.get('config_hash'):
+                        logging.getLogger('root_logger').info(f'[MQTT]: ACK Message received.')
+                        return response
+                    elif response.get('result') == 'OK':
                         logging.getLogger('root_logger').info(f'[MQTT]: ACK Message received.')
                         return response
                     elif response.get('result') == 'ERROR':
