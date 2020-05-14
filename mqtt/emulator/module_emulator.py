@@ -88,7 +88,7 @@ class ModuleThread(Thread):
 
             with self.app.app_context():
                 for device in self.devices:
-                    device_id = str(device.get('device').id)
+                    device_id = str(device.get('device').uuid)
                     datapoints = device.get('datapoints')
                     device_value = device.get('value')
 
