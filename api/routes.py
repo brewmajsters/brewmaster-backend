@@ -182,7 +182,6 @@ def update_module(module_id):
     data = form.data
     return json.dumps(data), 200, {'ContentType': 'application/json'}
 
-
 @blueprint.route('/modules/<module_id>/set_value', methods=['POST'])
 def set_value_module(module_id):
     json_data = ImmutableMultiDict(request.get_json(force=True))

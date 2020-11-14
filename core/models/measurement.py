@@ -9,7 +9,7 @@ from core.models.abstract.timescale_model import TimeScaleModel
 class Measurement(TimeScaleModel):
     __tablename__ = 'measurement'
 
-    time = db.Column(db.DateTime, primary_key=True, default=datetime.datetime.utcnow)
+    time = db.Column(db.DateTime, primary_key=True, server_default=db.func.now())
     value = db.Column(db.String(256))
     device_datapoint_id = db.Column(UUID(as_uuid=True), db.ForeignKey('device_datapoint.id'))
 

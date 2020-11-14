@@ -1,4 +1,3 @@
-from uuid import uuid4
 from sqlalchemy.dialects.postgresql import UUID
 from core.models import BaseModel
 from core.models.abstract.base_model import db
