@@ -14,3 +14,11 @@ class Measurement(TimeScaleModel):
     device_datapoint_id = db.Column(UUID(as_uuid=True), db.ForeignKey('device_datapoint.id'))
 
     device_datapoint = db.relationship("DeviceDatapoint", back_populates="measurements")
+
+    def summary(self) -> dict:
+        return dict(
+            time=self.time,
+            value=self.value,
+            device_datapoint_id=str(self.device_datapoint_id)
+        )
+

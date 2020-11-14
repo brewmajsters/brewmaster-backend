@@ -131,7 +131,7 @@ def get_datapoint_measurements(datapoint_id):
     datapoint = DeviceDatapoint.query.filter(DeviceDatapoint.id == datapoint_id).first()
 
     return json.dumps(
-        datapoint.measurements
+        [item.summary() for item in datapoint.measurements]
     ), 200, {'ContentType': 'application/json'}
 
 # MODULES_OPERATIONS
