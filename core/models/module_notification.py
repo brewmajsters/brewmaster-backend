@@ -5,11 +5,11 @@ from sqlalchemy.dialects.postgresql import UUID
 
 
 class ModuleNotification(TimeScaleModel):
-    __tablename__ = 'module_notifications'
+    __tablename__ = 'module_notification'
     __timestamp_field__ = 'time'
 
-    time = db.Column(db.DateTime, nullable=False, primary_key=True, default=datetime.datetime.utcnow)
-    message = db.Column(db.String(250), nullable=False)
+    time = db.Column(db.DateTime, primary_key=True, default=datetime.datetime.utcnow)
+    message = db.Column(db.String(250))
 
     module_id = db.Column(UUID(as_uuid=True), db.ForeignKey('modules.id'))
 
