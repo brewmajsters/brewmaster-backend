@@ -11,7 +11,7 @@ class DeviceTypeDatapoint(StandardModel):
     description = db.Column(db.String(1024), nullable=True)
     writable = db.Column(db.Boolean)
     virtual = db.Column(db.Boolean)
-    module_device_type_id = db.Column(UUID(as_uuid=True), db.ForeignKey('module_device_types.id'))
+    module_device_type_id = db.Column(UUID(as_uuid=True), db.ForeignKey('module_device_type.id'))
     unit_id = db.Column(UUID(as_uuid=True), db.ForeignKey('unit.id'), nullable=True)
 
     module_device_type = db.relationship("ModuleDeviceType", back_populates="device_type_datapoints")

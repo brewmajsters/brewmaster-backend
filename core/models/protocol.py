@@ -7,7 +7,6 @@ class Protocol(StandardModel):
     __tablename__ = 'protocol'
 
     name = db.Column(db.String(100), unique=True)
-    datatype_id = db.Column(UUID(as_uuid=True), db.ForeignKey('data_types.id'))
 
     module_device_types = db.relationship("ModuleDeviceType", back_populates="protocol")
 

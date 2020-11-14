@@ -11,6 +11,6 @@ class ModuleNotification(TimeScaleModel):
     time = db.Column(db.DateTime, primary_key=True, default=datetime.datetime.utcnow)
     message = db.Column(db.String(250))
 
-    module_id = db.Column(UUID(as_uuid=True), db.ForeignKey('modules.id'))
+    module_id = db.Column(UUID(as_uuid=True), db.ForeignKey('module.id'))
 
     module = db.relationship("Module", back_populates="module_notification")

@@ -15,7 +15,7 @@ class DeviceDatapoint(StandardModel):
     device_id = db.Column(UUID(as_uuid=True), db.ForeignKey('device.id'))
 
     device = db.relationship("Device", back_populates="device_datapoints")
-    measurements = db.relationship("Measurement", back_populates="device_type_datapoint")
+    measurements = db.relationship("Measurement", back_populates="device_datapoint")
 
     def summary(self) -> dict:
         return dict(

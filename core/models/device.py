@@ -13,7 +13,7 @@ class Device(StandardModel):
     address = db.Column(db.String(100))
     poll_rate = db.Column(db.Integer())
     protocol_name = db.Column(db.String(100))
-    module_id = db.Column(UUID(as_uuid=True), db.ForeignKey('modules.id'))
+    module_id = db.Column(UUID(as_uuid=True), db.ForeignKey('module.id'))
 
     module = db.relationship("Module", back_populates="devices")
     device_datapoints = db.relationship("DeviceDatapoint", back_populates="device")
