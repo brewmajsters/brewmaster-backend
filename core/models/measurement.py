@@ -17,7 +17,7 @@ class Measurement(TimeScaleModel):
 
     def summary(self) -> dict:
         return dict(
-            time=self.time,
+            time=str(self.time),
             value=self.value,
             device_datapoint_id=str(self.device_datapoint_id)
         )
