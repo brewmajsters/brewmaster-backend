@@ -5,27 +5,48 @@ from api import http_status
 from api.errors import ApiException, ValidationException
 from api.forms.module_set_config import ModuleSetConfigForm
 from api.forms.module_set_value import ModuleSetValueForm
-from core.models import Module, DeviceTypeDatapoint, Protocol, Device, ModuleDeviceType
+from core.models import (
+    Unit,
+    Module,
+    DeviceTypeDatapoint,
+    DeviceDatapoint,
+    Protocol,
+    Device,
+    ModuleDeviceType
+)
 from mqtt.client import mqtt_client
 from mqtt.errors import MQTTException
 
 blueprint = Blueprint('blueprint', __name__, template_folder='templates', static_folder='static')
 
-
-# DEVICE_TYPE_DATAPOINT
-@blueprint.route('/datapoints', methods=['GET'])
-def list_datapoints():
-    datapoints = DeviceTypeDatapoint.query.all()
+# UNIT
+@blueprint.route('/units', methods=['GET'])
+def list_units():
+    units = Unit.query.all()
     return json.dumps(
-        [item.summary() for item in datapoints]
+        [item.summary() for item in units]
     ), 200, {'ContentType': 'application/json'}
 
-
-@blueprint.route('/datapoints/<datapoint_id>', methods=['GET'])
-def get_datapoint(datapoint_id):
-    datapoint = DeviceTypeDatapoint.query.filter(DeviceTypeDatapoint.id == datapoint_id).first()
+@blueprint.route('/units/<unit_id>', methods=['GET'])
+def get_unit(unit_id):
+    unit = Unit.query.filter(Unit.id == unit_id).first()
     return json.dumps(
-        datapoint.summary()
+        unit.summary()
+    ), 200, {'ContentType': 'application/json'}
+
+# DEVICE_TYPE_DATAPOINT
+@blueprint.route('/dt_datapoints', methods=['GET'])
+def list_dt_datapoints():
+    dt_datapoints = DeviceTypeDatapoint.query.all()
+    return json.dumps(
+        [item.summary() for item in dt_datapoints]
+    ), 200, {'ContentType': 'application/json'}
+
+@blueprint.route('/dt_datapoints/<dt_datapoint_id>', methods=['GET'])
+def get_dt_datapoint(dt_datapoint_id):
+    dt_datapoint = DeviceTypeDatapoint.query.filter(DeviceTypeDatapoint.id == dt_datapoint_id).first()
+    return json.dumps(
+        dt_datapoint.summary()
     ), 200, {'ContentType': 'application/json'}
 
 # MODULE_DEVICE_TYPE
@@ -36,14 +57,12 @@ def list_device_types():
         [item.summary() for item in module_device_types]
     ), 200, {'ContentType': 'application/json'}
 
-
 @blueprint.route('/devicetypes/<device_type_id>', methods=['GET'])
 def get_device_type(device_type_id):
     module_device_type = ModuleDeviceType.query.filter(ModuleDeviceType.id == device_type_id).first()
     return json.dumps(
         module_device_type.summary()
     ), 200, {'ContentType': 'application/json'}
-
 
 # PROTOCOLS
 @blueprint.route('/protocols', methods=['GET'])
@@ -53,31 +72,12 @@ def list_protocols():
         [item.summary() for item in protocols]
     ), 200, {'ContentType': 'application/json'}
 
-
 @blueprint.route('/protocols/<protocol_id>', methods=['GET'])
 def get_protocol(protocol_id):
     protocol = Protocol.query.filter(Protocol.id == protocol_id).first()
     return json.dumps(
         protocol.summary()
     ), 200, {'ContentType': 'application/json'}
-
-
-# DEVICES
-@blueprint.route('/devices', methods=['GET'])
-def list_devices():
-    devices = Device.query.all()
-    return json.dumps(
-        [item.summary() for item in devices]
-    ), 200, {'ContentType': 'application/json'}
-
-
-@blueprint.route('/devices/<devices_id>', methods=['GET'])
-def get_device(devices_id):
-    device = Device.query.filter(Device.id == devices_id).first()
-    return json.dumps(
-        device.summary()
-    ), 200, {'ContentType': 'application/json'}
-
 
 # MODULES
 @blueprint.route('/modules', methods=['GET'])
@@ -87,7 +87,6 @@ def list_modules():
         [item.summary() for item in modules]
     ), 200, {'ContentType': 'application/json'}
 
-
 @blueprint.route('/modules/<module_id>', methods=['GET'])
 def get_module(module_id):
     module = Module.query.filter(Module.id == module_id).first()
@@ -96,6 +95,44 @@ def get_module(module_id):
         module.summary()
     ), 200, {'ContentType': 'application/json'}
 
+# DEVICES
+@blueprint.route('/devices', methods=['GET'])
+def list_devices():
+    devices = Device.query.all()
+    return json.dumps(
+        [item.summary() for item in devices]
+    ), 200, {'ContentType': 'application/json'}
+
+@blueprint.route('/devices/<devices_id>', methods=['GET'])
+def get_device(devices_id):
+    device = Device.query.filter(Device.id == devices_id).first()
+    return json.dumps(
+        device.summary()
+    ), 200, {'ContentType': 'application/json'}
+
+# DEVICE_DATAPOINT
+@blueprint.route('/datapoints', methods=['GET'])
+def list_datapoints():
+    datapoints = DeviceDatapoint.query.all()
+    return json.dumps(
+        [item.summary() for item in datapoints]
+    ), 200, {'ContentType': 'application/json'}
+
+@blueprint.route('/datapoints/<datapoint_id>', methods=['GET'])
+def get_datapoint(datapoint_id):
+    datapoint = DeviceDatapoint.query.filter(DeviceDatapoint.id == datapoint_id).first()
+
+    return json.dumps(
+        datapoint.summary()
+    ), 200, {'ContentType': 'application/json'}
+
+@blueprint.route('/datapoints/<datapoint_id>/measurements', methods=['GET'])
+def get_datapoint_measurements(datapoint_id):
+    datapoint = DeviceDatapoint.query.filter(DeviceDatapoint.id == datapoint_id).first()
+
+    return json.dumps(
+        datapoint.measurements
+    ), 200, {'ContentType': 'application/json'}
 
 # MODULES_OPERATIONS
 @blueprint.route('/modules/request', methods=['POST'])
