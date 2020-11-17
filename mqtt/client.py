@@ -4,7 +4,7 @@ import os
 import time
 import eventlet
 import paho.mqtt.client as mqtt
-from core.models import Module, ModuleNotification
+from core.models import Module, Measurement
 from mqtt import mqtt_status
 from mqtt.errors import MQTTException
 
@@ -94,7 +94,7 @@ class MqttClient(object):
                 logging.getLogger('root_logger').info(
                     f'[PostgreSQL]: Vytvorená inštancia v histórii posielaných dát: {module_mac}'
                 )
-                ModuleNotification(module=module, message=json.dumps(values)).create()
+                # Measurement(module=module, message=json.dumps(values)).create()
                 module_db_blocker['time'] = 0
 
             module_db_blocker['time'] += 1

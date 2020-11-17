@@ -6,11 +6,10 @@ from core.models.abstract.standard_model import StandardModel
 class Module(StandardModel):
     __tablename__ = 'modules'
 
-    mac = db.Column(db.String(100), nullable=True)
+    mac = db.Column(db.String(100), unique=True, nullable=True)
     module_device_type_id = db.Column(UUID(as_uuid=True), db.ForeignKey('module_device_types.id'))
 
     devices = db.relationship("Device", lazy='dynamic', back_populates="module")
-    module_notification = db.relationship("ModuleNotification", lazy='dynamic', back_populates="module")
     module_device_type = db.relationship("ModuleDeviceType", back_populates="modules")
 
     def summary(self) -> dict:

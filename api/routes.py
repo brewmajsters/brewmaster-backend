@@ -5,7 +5,7 @@ from api import http_status
 from api.errors import ApiException, ValidationException
 from api.forms.module_set_config import ModuleSetConfigForm
 from api.forms.module_set_value import ModuleSetValueForm
-from core.models import Module, DeviceTypeDatapoint, Protocol, Device, ModuleDeviceType, DataType
+from core.models import Module, DeviceTypeDatapoint, Protocol, Device, ModuleDeviceType
 from mqtt.client import mqtt_client
 from mqtt.errors import MQTTException
 
@@ -27,24 +27,6 @@ def get_datapoint(datapoint_id):
     return json.dumps(
         datapoint.summary()
     ), 200, {'ContentType': 'application/json'}
-
-
-# DATATYPE
-@blueprint.route('/datatypes', methods=['GET'])
-def list_datatypes():
-    datatypes = DataType.query.all()
-    return json.dumps(
-        [item.summary() for item in datatypes]
-    ), 200, {'ContentType': 'application/json'}
-
-
-@blueprint.route('/datatypes/<datatypes_id>', methods=['GET'])
-def get_datatype(datatypes_id):
-    datatype = DataType.query.filter(DataType.id == datatypes_id).first()
-    return json.dumps(
-        datatype.summary()
-    ), 200, {'ContentType': 'application/json'}
-
 
 # MODULE_DEVICE_TYPE
 @blueprint.route('/devicetypes', methods=['GET'])
