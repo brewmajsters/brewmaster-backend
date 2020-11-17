@@ -15,7 +15,8 @@ from core.models import (
     DeviceDatapoint,
     Protocol,
     Device,
-    ModuleDeviceType, ModuleNotification, Measurement
+    ModuleDeviceType,
+    Measurement
 )
 from mqtt.client import mqtt_client
 from mqtt.errors import MQTTException
@@ -103,11 +104,14 @@ def get_module(module_id):
 def list_devices():
     module_id = request.args.get('module_id')
 
-    module = Module.query.get(module_id)
-    if not module:
-        raise ApiException('Daný modul sa nepodarilo nájsť.', status_code=http_status.HTTP_404_NOT_FOUND)
+    if module_id:
+        module = Module.query.get(module_id)
+        if not module:
+            raise ApiException('Daný modul sa nepodarilo nájsť.', status_code=http_status.HTTP_404_NOT_FOUND)
 
-    devices = Device.query.filter(Device.module == module)
+        devices = Device.query.filter(Device.module == module)
+    else:
+        devices = Device.query.all()
     return json.dumps(
         [item.summary() for item in devices]
     ), 200, {'ContentType': 'application/json'}
@@ -249,9 +253,7 @@ def set_value_module(module_id):
         raise ApiException('Daný datapoint sa nepodarilo nájsť.', status_code=http_status.HTTP_404_NOT_FOUND)
 
     data['device_uuid'] = str(device.uuid)
-
-    # TODO: Ziskat sequence number (odniekial)
-    data['sequence_number'] = 123
+    data['sequence_number'] = randint(100, 999)
 
     try:
         response = mqtt_client.send_message(module.mac, 'SET_VALUE', json.dumps(data))

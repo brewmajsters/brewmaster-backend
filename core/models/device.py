@@ -1,5 +1,3 @@
-import typing
-
 from sqlalchemy.dialects.postgresql import UUID
 
 from core.models.abstract.base_model import db
