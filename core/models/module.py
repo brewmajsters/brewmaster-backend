@@ -9,7 +9,7 @@ class Module(StandardModel):
     mac = db.Column(db.String(100), unique=True)
     module_device_type_id = db.Column(UUID(as_uuid=True), db.ForeignKey('module_device_type.id'))
 
-    devices = db.relationship("Device", back_populates="module")
+    devices = db.relationship("Device", lazy='dynamic', back_populates="module")
     module_notification = db.relationship("ModuleNotification", lazy='dynamic', back_populates="module")
     module_device_type = db.relationship("ModuleDeviceType", back_populates="modules")
 

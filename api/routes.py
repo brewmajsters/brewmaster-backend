@@ -160,6 +160,12 @@ def set_device_datapoint(datapoint_id):
     }
 
     if datapoint.virtual:
+        response = {
+            "module_mac": module_mac,
+            "sequence_number": sequence_number,
+            "result": "OK",
+        }
+    else:
         try:
             response = mqtt_client.send_message(
                 module_mac,
@@ -168,13 +174,8 @@ def set_device_datapoint(datapoint_id):
             )
         except MQTTException as e:
             raise ApiException(e.message, status_code=http_status.HTTP_400_BAD_REQUEST, previous=e)
-    else:
-        Measurement(value=form.data.get('value'), device_datapoint=datapoint).create()
-        response = {
-            "module_mac": module_mac,
-            "sequence_number": sequence_number,
-            "result": "OK",
-        }
+
+    Measurement(value=form.data.get('value'), device_datapoint=datapoint).create()
 
     return json.dumps(response), 200, {'ContentType': 'application/json'}
 

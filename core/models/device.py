@@ -16,7 +16,7 @@ class Device(StandardModel):
     module_id = db.Column(UUID(as_uuid=True), db.ForeignKey('module.id'))
 
     module = db.relationship("Module", back_populates="devices")
-    device_datapoints = db.relationship("DeviceDatapoint", back_populates="device")
+    device_datapoints = db.relationship("DeviceDatapoint", lazy='dynamic', back_populates="device")
 
     def summary(self) -> dict:
         return dict(
