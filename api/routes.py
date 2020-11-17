@@ -1,8 +1,11 @@
 import json
+from random import randint
+
 from flask import Blueprint, request
 from werkzeug.datastructures import ImmutableMultiDict
 from api import http_status
 from api.errors import ApiException, ValidationException
+from api.forms.device_datapoint_set_value import DeviceDatapointSetValueForm
 from api.forms.module_set_config import ModuleSetConfigForm
 from api.forms.module_set_value import ModuleSetValueForm
 from core.models import (
@@ -12,7 +15,7 @@ from core.models import (
     DeviceDatapoint,
     Protocol,
     Device,
-    ModuleDeviceType
+    ModuleDeviceType, ModuleNotification, Measurement
 )
 from mqtt.client import mqtt_client
 from mqtt.errors import MQTTException
@@ -98,7 +101,13 @@ def get_module(module_id):
 # DEVICES
 @blueprint.route('/devices', methods=['GET'])
 def list_devices():
-    devices = Device.query.all()
+    module_id = request.args.get('module_id')
+
+    module = Module.query.get(module_id)
+    if not module:
+        raise ApiException('Daný modul sa nepodarilo nájsť.', status_code=http_status.HTTP_404_NOT_FOUND)
+
+    devices = Device.query.filter(Device.module == module)
     return json.dumps(
         [item.summary() for item in devices]
     ), 200, {'ContentType': 'application/json'}
@@ -121,18 +130,53 @@ def list_device_datapoints():
 @blueprint.route('/device_datapoints/<datapoint_id>', methods=['GET'])
 def get_device_datapoint(datapoint_id):
     datapoint = DeviceDatapoint.query.filter(DeviceDatapoint.id == datapoint_id).first()
+    if not datapoint:
+        raise ApiException('Daný datapoint sa nepodarilo nájsť.', status_code=http_status.HTTP_404_NOT_FOUND)
 
     return json.dumps(
         datapoint.summary()
     ), 200, {'ContentType': 'application/json'}
 
-@blueprint.route('/device_datapoints/<datapoint_id>/measurements', methods=['GET'])
-def get_datapoint_measurements(datapoint_id):
-    datapoint = DeviceDatapoint.query.filter(DeviceDatapoint.id == datapoint_id).first()
+@blueprint.route('/device_datapoints/<datapoint_id>', methods=['POST'])
+def set_device_datapoint(datapoint_id):
+    json_data = ImmutableMultiDict(request.get_json(force=True))
+    form = DeviceDatapointSetValueForm(json_data, meta={'csrf': False})
 
-    return json.dumps(
-        [item.summary() for item in datapoint.measurements]
-    ), 200, {'ContentType': 'application/json'}
+    if not form.validate():
+        raise ValidationException(form.errors)
+
+    datapoint = DeviceDatapoint.query.filter(DeviceDatapoint.id == datapoint_id).first()
+    if not datapoint:
+        raise ApiException('Daný datapoint sa nepodarilo nájsť.', status_code=http_status.HTTP_404_NOT_FOUND)
+
+    value = form.data.get('value')
+    sequence_number = randint(100, 999)
+    module_mac = datapoint.device.module.mac
+    request_data = {
+        'device_id': str(datapoint.device.id),
+        'datapoint': datapoint.code,
+        'value': value,
+        'sequence_number': sequence_number
+    }
+
+    if datapoint.virtual:
+        try:
+            response = mqtt_client.send_message(
+                module_mac,
+                'SET_VALUE',
+                json.dumps(request_data)
+            )
+        except MQTTException as e:
+            raise ApiException(e.message, status_code=http_status.HTTP_400_BAD_REQUEST, previous=e)
+    else:
+        Measurement(value=form.data.get('value'), device_datapoint=datapoint).create()
+        response = {
+            "module_mac": module_mac,
+            "sequence_number": sequence_number,
+            "result": "OK",
+        }
+
+    return json.dumps(response), 200, {'ContentType': 'application/json'}
 
 # MODULES_OPERATIONS
 @blueprint.route('/modules/request', methods=['POST'])

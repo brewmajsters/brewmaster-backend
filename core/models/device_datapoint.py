@@ -27,4 +27,15 @@ class DeviceDatapoint(StandardModel):
             virtual=self.virtual,
             description=self.description,
             writable=self.writable,
+            measurements=[measurement.summary() for measurement in self.measurements]
+        )
+
+    def relation(self) -> dict:
+        return dict(
+            id=str(self.id),
+            name=self.name,
+            unit_symbol=self.unit_symbol,
+            code=self.code,
+            virtual=self.virtual,
+            writable=self.writable,
         )

@@ -26,6 +26,7 @@ class Device(StandardModel):
             protocol_name=self.protocol_name,
             address=self.address,
             poll_rate=self.poll_rate,
+            device_datapoints=[device_datapoint.relation() for device_datapoint in self.device_datapoints]
         )
 
     def config_summary(self) -> dict:

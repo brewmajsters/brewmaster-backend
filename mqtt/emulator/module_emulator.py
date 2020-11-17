@@ -59,7 +59,7 @@ class ModuleThread(Thread):
             'value': random.randint(1, 10),
             'poll_rate': None,
             'address': None,
-            'datapoints': [datapoint.summary() for datapoint in device.get_device_datapoints()]
+            'datapoints': [datapoint.summary() for datapoint in device.device_datapoints]
         } for device in devices]
 
     def set_value(self, data):

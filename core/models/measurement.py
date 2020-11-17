@@ -21,4 +21,3 @@ class Measurement(TimeScaleModel):
             value=self.value,
             device_datapoint_id=str(self.device_datapoint_id)
         )
-
