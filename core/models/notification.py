@@ -4,14 +4,14 @@ from core.models.abstract.standard_model import StandardModel
 
 
 class Notification(StandardModel):
-    __tablename__ = 'notifications'
+    __tablename__ = 'notification'
 
     message = db.Column(db.String(100), nullable=True)
-    method = db.Column(db.String(10), nullable=False, default='GET')
-    url = db.Column(db.String(250), nullable=False, default='/')
-    module = db.Column(db.String(50), nullable=False)
-    function = db.Column(db.String(50), nullable=False)
-    level = db.Column(db.String(50), nullable=False, default='')
+    method = db.Column(db.String(10), default='GET')
+    url = db.Column(db.String(250), default='/')
+    module = db.Column(db.String(50))
+    function = db.Column(db.String(50))
+    level = db.Column(db.String(50), default='')
     status_code = db.Column(db.Integer, nullable=True)
     request = db.Column(types.JSON(), nullable=True)
     additional_data = db.Column(types.JSON(), nullable=True)

@@ -7,33 +7,31 @@ from core.models.abstract.standard_model import StandardModel
 
 
 class Device(StandardModel):
-    __tablename__ = 'devices'
+    __tablename__ = 'device'
 
-    uuid = db.Column(UUID(as_uuid=True), nullable=True)
-    address = db.Column(db.String(100), nullable=True)
-    poll_rate = db.Column(db.String(100), nullable=True)
-    module_id = db.Column(UUID(as_uuid=True), db.ForeignKey('modules.id'))
+    name = db.Column(db.String(100), unique=True)
+    address = db.Column(db.String(100))
+    poll_rate = db.Column(db.Integer())
+    protocol_name = db.Column(db.String(100))
+    module_id = db.Column(UUID(as_uuid=True), db.ForeignKey('module.id'))
 
     module = db.relationship("Module", back_populates="devices")
-
-    def get_device_datapoints(self) -> typing.List:
-        return self.module.module_device_type.device_type_datapoints
+    device_datapoints = db.relationship("DeviceDatapoint", back_populates="device")
 
     def summary(self) -> dict:
         return dict(
             id=str(self.id),
+            name=self.name,
             module_id=str(self.module_id) if self.module_id else None,
-            uuid=str(self.uuid),
+            protocol_name=self.protocol_name,
             address=self.address,
             poll_rate=self.poll_rate,
-            datapoints=[datapoint.summary() for datapoint
-                        in self.get_device_datapoints()]
         )
 
-    def module_summary(self) -> dict:
+    def config_summary(self) -> dict:
         return dict(
             id=str(self.id),
-            uuid=str(self.uuid),
+            name=self.name,
             address=self.address,
             poll_rate=self.poll_rate,
         )
