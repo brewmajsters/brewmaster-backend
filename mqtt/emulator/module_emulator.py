@@ -64,7 +64,7 @@ class ModuleThread(Thread):
 
     def set_value(self, data):
         for device in self.devices:
-            emulator_device_uuid = str(device.get('device').uuid)
+            emulator_device_uuid = str(device.get('device').id)
             data_device_uuid = data.get('device_uuid')
 
             if emulator_device_uuid == data_device_uuid:
@@ -72,7 +72,7 @@ class ModuleThread(Thread):
 
     def set_config(self, data):
         for device in self.devices:
-            emulator_device_uuid = str(device.get('device').uuid)
+            emulator_device_uuid = str(device.get('device').id)
 
             if emulator_device_uuid in data:
                 device_data = data.get(emulator_device_uuid)
