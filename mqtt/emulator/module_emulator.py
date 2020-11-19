@@ -64,8 +64,8 @@ class ModuleThread(Thread):
 
     def set_value(self, data):
         for device in self.devices:
-            emulator_device_uuid = str(device.get('device').uuid)
-            data_device_uuid = data.get('device_uuid')
+            emulator_device_uuid = str(device.get('device').id)
+            data_device_uuid = data.get('device_id')
 
             if emulator_device_uuid == data_device_uuid:
                 device['value'] = data.get('value')
