@@ -29,14 +29,14 @@ def list_units():
     units = Unit.query.all()
     return json.dumps(
         [item.summary() for item in units]
-    ), 200, {'ContentType': 'application/json'}
+    ), 200, {'Content-Type': 'application/json'}
 
 @blueprint.route('/units/<unit_id>', methods=['GET'])
 def get_unit(unit_id):
     unit = Unit.query.filter(Unit.id == unit_id).first()
     return json.dumps(
         unit.summary()
-    ), 200, {'ContentType': 'application/json'}
+    ), 200, {'Content-Type': 'application/json'}
 
 # DEVICE_TYPE_DATAPOINT
 @blueprint.route('/devicetype_datapoints', methods=['GET'])
@@ -44,14 +44,14 @@ def list_devicetype_datapoints():
     devicetype_datapoints = DeviceTypeDatapoint.query.all()
     return json.dumps(
         [item.summary() for item in devicetype_datapoints]
-    ), 200, {'ContentType': 'application/json'}
+    ), 200, {'Content-Type': 'application/json'}
 
 @blueprint.route('/devicetype_datapoints/<devicetype_datapoint_id>', methods=['GET'])
 def get_devicetype_datapoint(devicetype_datapoint_id):
     devicetype_datapoint = DeviceTypeDatapoint.query.filter(DeviceTypeDatapoint.id == devicetype_datapoint_id).first()
     return json.dumps(
         devicetype_datapoint.summary()
-    ), 200, {'ContentType': 'application/json'}
+    ), 200, {'Content-Type': 'application/json'}
 
 # MODULE_DEVICE_TYPE
 @blueprint.route('/devicetypes', methods=['GET'])
@@ -59,14 +59,14 @@ def list_device_types():
     module_device_types = ModuleDeviceType.query.all()
     return json.dumps(
         [item.summary() for item in module_device_types]
-    ), 200, {'ContentType': 'application/json'}
+    ), 200, {'Content-Type': 'application/json'}
 
 @blueprint.route('/devicetypes/<device_type_id>', methods=['GET'])
 def get_device_type(device_type_id):
     module_device_type = ModuleDeviceType.query.filter(ModuleDeviceType.id == device_type_id).first()
     return json.dumps(
         module_device_type.summary()
-    ), 200, {'ContentType': 'application/json'}
+    ), 200, {'Content-Type': 'application/json'}
 
 # PROTOCOLS
 @blueprint.route('/protocols', methods=['GET'])
@@ -74,14 +74,14 @@ def list_protocols():
     protocols = Protocol.query.all()
     return json.dumps(
         [item.summary() for item in protocols]
-    ), 200, {'ContentType': 'application/json'}
+    ), 200, {'Content-Type': 'application/json'}
 
 @blueprint.route('/protocols/<protocol_id>', methods=['GET'])
 def get_protocol(protocol_id):
     protocol = Protocol.query.filter(Protocol.id == protocol_id).first()
     return json.dumps(
         protocol.summary()
-    ), 200, {'ContentType': 'application/json'}
+    ), 200, {'Content-Type': 'application/json'}
 
 # MODULES
 @blueprint.route('/modules', methods=['GET'])
@@ -89,7 +89,7 @@ def list_modules():
     modules = Module.query.all()
     return json.dumps(
         [item.summary() for item in modules]
-    ), 200, {'ContentType': 'application/json'}
+    ), 200, {'Content-Type': 'application/json'}
 
 @blueprint.route('/modules/<module_id>', methods=['GET'])
 def get_module(module_id):
@@ -97,7 +97,7 @@ def get_module(module_id):
 
     return json.dumps(
         module.summary()
-    ), 200, {'ContentType': 'application/json'}
+    ), 200, {'Content-Type': 'application/json'}
 
 # DEVICES
 @blueprint.route('/devices', methods=['GET'])
@@ -114,14 +114,14 @@ def list_devices():
         devices = Device.query.all()
     return json.dumps(
         [item.summary() for item in devices]
-    ), 200, {'ContentType': 'application/json'}
+    ), 200, {'Content-Type': 'application/json'}
 
 @blueprint.route('/devices/<device_id>', methods=['GET'])
 def get_device(device_id):
     device = Device.query.filter(Device.id == device_id).first()
     return json.dumps(
         device.summary()
-    ), 200, {'ContentType': 'application/json'}
+    ), 200, {'Content-Type': 'application/json'}
 
 # DEVICE_DATAPOINT
 @blueprint.route('/device_datapoints', methods=['GET'])
@@ -139,7 +139,7 @@ def list_device_datapoints():
 
     return json.dumps(
         [item.summary() for item in datapoints]
-    ), 200, {'ContentType': 'application/json'}
+    ), 200, {'Content-Type': 'application/json'}
 
 @blueprint.route('/device_datapoints/<datapoint_id>', methods=['GET'])
 def get_device_datapoint(datapoint_id):
@@ -149,7 +149,7 @@ def get_device_datapoint(datapoint_id):
 
     return json.dumps(
         datapoint.summary()
-    ), 200, {'ContentType': 'application/json'}
+    ), 200, {'Content-Type': 'application/json'}
 
 @blueprint.route('/device_datapoints/<datapoint_id>', methods=['PUT'])
 def set_device_datapoint(datapoint_id):
@@ -190,7 +190,7 @@ def set_device_datapoint(datapoint_id):
 
     datapoint.update(form.data)
 
-    return json.dumps(response), 200, {'ContentType': 'application/json'}
+    return json.dumps(response), 200, {'Content-Type': 'application/json'}
 
 # MODULES_OPERATIONS
 @blueprint.route('/modules/request', methods=['POST'])
@@ -206,7 +206,7 @@ def request_all(module_id):
         raise ApiException('Daný modul sa nepodarilo nájsť.', status_code=http_status.HTTP_404_NOT_FOUND)
 
     data = form.data
-    return json.dumps(data), 200, {'ContentType': 'application/json'}
+    return json.dumps(data), 200, {'Content-Type': 'application/json'}
 
 @blueprint.route('/modules/<module_id>/request', methods=['POST'])
 def request_module(module_id):
@@ -221,7 +221,7 @@ def request_module(module_id):
         raise ApiException('Daný modul sa nepodarilo nájsť.', status_code=http_status.HTTP_404_NOT_FOUND)
 
     data = form.data
-    return json.dumps(data), 200, {'ContentType': 'application/json'}
+    return json.dumps(data), 200, {'Content-Type': 'application/json'}
 
 @blueprint.route('/modules/<module_id>/update', methods=['POST'])
 def update_module(module_id):
@@ -236,7 +236,7 @@ def update_module(module_id):
         raise ApiException('Daný modul sa nepodarilo nájsť.', status_code=http_status.HTTP_404_NOT_FOUND)
 
     data = form.data
-    return json.dumps(data), 200, {'ContentType': 'application/json'}
+    return json.dumps(data), 200, {'Content-Type': 'application/json'}
 
 @blueprint.route('/modules/<module_id>/set_value', methods=['POST'])
 def set_value_module(module_id):
@@ -269,7 +269,7 @@ def set_value_module(module_id):
     except MQTTException as e:
         raise ApiException(e.message, status_code=http_status.HTTP_400_BAD_REQUEST, previous=e)
 
-    return json.dumps(response), 200, {'ContentType': 'application/json'}
+    return json.dumps(response), 200, {'Content-Type': 'application/json'}
 
 @blueprint.route('/modules/<module_id>/config', methods=['POST'])
 def config_module(module_id):
@@ -304,4 +304,4 @@ def config_module(module_id):
     except MQTTException as e:
         raise ApiException(e.message, status_code=http_status.HTTP_400_BAD_REQUEST, previous=e)
 
-    return json.dumps(response), 200, {'ContentType': 'application/json'}
+    return json.dumps(response), 200, {'Content-Type': 'application/json'}
