@@ -116,9 +116,9 @@ def list_devices():
         [item.summary() for item in devices]
     ), 200, {'ContentType': 'application/json'}
 
-@blueprint.route('/devices/<devices_id>', methods=['GET'])
-def get_device(devices_id):
-    device = Device.query.filter(Device.id == devices_id).first()
+@blueprint.route('/devices/<device_id>', methods=['GET'])
+def get_device(device_id):
+    device = Device.query.filter(Device.id == device_id).first()
     return json.dumps(
         device.summary()
     ), 200, {'ContentType': 'application/json'}
@@ -126,7 +126,17 @@ def get_device(devices_id):
 # DEVICE_DATAPOINT
 @blueprint.route('/device_datapoints', methods=['GET'])
 def list_device_datapoints():
-    datapoints = DeviceDatapoint.query.all()
+    device_id = request.args.get('device_id')
+
+    if device_id:
+        device = Device.query.get(device_id)
+        if not device:
+            raise ApiException('Daný device sa nepodarilo nájsť.', status_code=http_status.HTTP_404_NOT_FOUND)
+
+        datapoints = DeviceDatapoint.query.filter(DeviceDatapoint.device == device)
+    else:
+        datapoints = DeviceDatapoint.query.all()
+
     return json.dumps(
         [item.summary() for item in datapoints]
     ), 200, {'ContentType': 'application/json'}
@@ -141,7 +151,7 @@ def get_device_datapoint(datapoint_id):
         datapoint.summary()
     ), 200, {'ContentType': 'application/json'}
 
-@blueprint.route('/device_datapoints/<datapoint_id>', methods=['POST'])
+@blueprint.route('/device_datapoints/<datapoint_id>', methods=['PUT'])
 def set_device_datapoint(datapoint_id):
     json_data = ImmutableMultiDict(request.get_json(force=True))
     form = DeviceDatapointSetValueForm(json_data, meta={'csrf': False})
@@ -153,33 +163,32 @@ def set_device_datapoint(datapoint_id):
     if not datapoint:
         raise ApiException('Daný datapoint sa nepodarilo nájsť.', status_code=http_status.HTTP_404_NOT_FOUND)
 
-    value = form.data.get('value')
-    sequence_number = randint(100, 999)
-    module_mac = datapoint.device.module.mac
-    request_data = {
-        'device_id': str(datapoint.device.id),
-        'datapoint': datapoint.code,
-        'value': value,
-        'sequence_number': sequence_number
-    }
+    if 'value' in form.data and datapoint.writable:
+        value = form.data.get('value')
 
-    if datapoint.virtual:
-        response = {
-            "module_mac": module_mac,
-            "sequence_number": sequence_number,
-            "result": "OK",
-        }
+        if not datapoint.virtual:
+            sequence_number = randint(0, 65535)
+            request_data = {
+                'device_id': str(datapoint.device.id),
+                'datapoint': datapoint.code,
+                'value': value,
+                'sequence_number': sequence_number
+            }
+
+            try:
+                response = mqtt_client.send_message(
+                    datapoint.device.module.mac,
+                    'SET_VALUE',
+                    json.dumps(request_data)
+                )
+            except MQTTException as e:
+                raise ApiException(e.message, status_code=http_status.HTTP_400_BAD_REQUEST, previous=e)
+
+            del form.data['value']
     else:
-        try:
-            response = mqtt_client.send_message(
-                module_mac,
-                'SET_VALUE',
-                json.dumps(request_data)
-            )
-        except MQTTException as e:
-            raise ApiException(e.message, status_code=http_status.HTTP_400_BAD_REQUEST, previous=e)
+        raise ApiException('Specified value for non-writable datapoint.', status_code=http_status.HTTP_400_BAD_REQUEST)
 
-    Measurement(value=form.data.get('value'), device_datapoint=datapoint).create()
+    datapoint.update(form.data)
 
     return json.dumps(response), 200, {'ContentType': 'application/json'}
 

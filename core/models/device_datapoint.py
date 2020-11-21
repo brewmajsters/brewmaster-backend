@@ -11,6 +11,7 @@ class DeviceDatapoint(StandardModel):
     description = db.Column(db.String(1024), nullable=True)
     writable = db.Column(db.Boolean)
     virtual = db.Column(db.Boolean)
+    value = db.Column(db.String(256), nullable=True)
     unit_symbol = db.Column(db.String(8), nullable=True)
     device_id = db.Column(UUID(as_uuid=True), db.ForeignKey('device.id'))
 
@@ -25,6 +26,7 @@ class DeviceDatapoint(StandardModel):
             unit_symbol=self.unit_symbol,
             code=self.code,
             virtual=self.virtual,
+            value=self.value,
             description=self.description,
             writable=self.writable,
             measurements=[measurement.summary() for measurement in self.measurements]
@@ -37,5 +39,6 @@ class DeviceDatapoint(StandardModel):
             unit_symbol=self.unit_symbol,
             code=self.code,
             virtual=self.virtual,
+            value=self.value,
             writable=self.writable,
         )
