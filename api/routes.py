@@ -5,7 +5,7 @@ from flask import Blueprint, request
 from werkzeug.datastructures import ImmutableMultiDict
 from api import http_status
 from api.errors import ApiException, ValidationException
-from api.forms.device_datapoint_set_value import DeviceDatapointSetValueForm
+from api.forms.device_datapoint_put import DeviceDatapointPutForm
 from api.forms.module_set_config import ModuleSetConfigForm
 from api.forms.module_set_value import ModuleSetValueForm
 from core.models import (
@@ -151,27 +151,28 @@ def get_device_datapoint(datapoint_id):
         datapoint.summary()
     ), 200, {'Content-Type': 'application/json'}
 
-@blueprint.route('/device_datapoints/<datapoint_id>', methods=['PUT'])
+@blueprint.route('/device_datapoints/<datapoint_id>', methods=['PATCH'])
 def set_device_datapoint(datapoint_id):
     json_data = ImmutableMultiDict(request.get_json(force=True))
-    form = DeviceDatapointSetValueForm(json_data, meta={'csrf': False})
+    response = {'result': 'ok'}
+    # form = DeviceDatapointPutForm(json_data, meta={'csrf': False})
 
-    if not form.validate():
-        raise ValidationException(form.errors)
+    # if not form.validate():
+    #     raise ValidationException(form.errors)
 
     datapoint = DeviceDatapoint.query.filter(DeviceDatapoint.id == datapoint_id).first()
     if not datapoint:
         raise ApiException('Daný datapoint sa nepodarilo nájsť.', status_code=http_status.HTTP_404_NOT_FOUND)
 
-    if 'value' in form.data and datapoint.writable:
-        value = form.data.get('value')
+    if 'value' in json_data and datapoint.writable:
+        value = json_data.get('value')
 
         if not datapoint.virtual:
             sequence_number = randint(0, 65535)
             request_data = {
                 'device_id': str(datapoint.device.id),
                 'datapoint': datapoint.code,
-                'value': value,
+                'value': f'{value}',
                 'sequence_number': sequence_number
             }
 
@@ -184,11 +185,12 @@ def set_device_datapoint(datapoint_id):
             except MQTTException as e:
                 raise ApiException(e.message, status_code=http_status.HTTP_400_BAD_REQUEST, previous=e)
 
-            del form.data['value']
-    else:
+            del json_data['value']
+
+    elif 'value' in json_data and not datapoint.writable:
         raise ApiException('Specified value for non-writable datapoint.', status_code=http_status.HTTP_400_BAD_REQUEST)
 
-    datapoint.update(form.data)
+    datapoint.update(json_data)
 
     return json.dumps(response), 200, {'Content-Type': 'application/json'}
 
