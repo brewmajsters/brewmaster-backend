@@ -77,7 +77,7 @@ class MqttClient(object):
                 )
 
             for key, value in values.items():
-                device = module.devices.filter_by(id=key)
+                device = module.devices.filter_by(id=key).first()
 
                 if not device:
                     raise MQTTException(
@@ -85,14 +85,14 @@ class MqttClient(object):
                         status_code=mqtt_status.MQTT_ERR_NOT_FOUND
                     )
 
-                for datapiont_code, datapoint_value in values:
-                    datapoint = DeviceDatapoint.query.filter_by({'device_id': device.id, 'code':datapiont_code}).first()
+                for datapiont_code, datapoint_value in value.items():
+                    datapoint = DeviceDatapoint.query.filter_by(device_id=device.id, code=datapiont_code).first()
                     if not datapoint:
                         raise MQTTException(
                             f'Špecifikovaný datapoint nebol nájdený: {key}',
                             status_code=mqtt_status.MQTT_ERR_NOT_FOUND
                         )
-                    Measurement(datapoint=datapoint, value=datapoint_value)
+                    Measurement(device_datapoint=datapoint, value=datapoint_value).create()
 
                 self.socketio.emit(str(module.id), data, namespace='/web_socket')
                 logging.getLogger('root_logger').info(f'[SocketIO]: Posielaná správa: {data} na webový klient.')
