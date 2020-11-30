@@ -153,12 +153,8 @@ def get_device_datapoint(datapoint_id):
 
 @blueprint.route('/device_datapoints/<datapoint_id>', methods=['PATCH'])
 def set_device_datapoint(datapoint_id):
-    json_data = ImmutableMultiDict(request.get_json(force=True))
+    json_data = request.get_json(force=True)
     response = {'result': 'ok'}
-    # form = DeviceDatapointPutForm(json_data, meta={'csrf': False})
-
-    # if not form.validate():
-    #     raise ValidationException(form.errors)
 
     datapoint = DeviceDatapoint.query.filter(DeviceDatapoint.id == datapoint_id).first()
     if not datapoint:

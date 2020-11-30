@@ -85,11 +85,11 @@ class MqttClient(object):
                         status_code=mqtt_status.MQTT_ERR_NOT_FOUND
                     )
 
-                for datapiont_code, datapoint_value in value.items():
-                    datapoint = DeviceDatapoint.query.filter_by(device_id=device.id, code=datapiont_code).first()
+                for datapoint_code, datapoint_value in value.items():
+                    datapoint = DeviceDatapoint.query.filter_by(device_id=device.id, code=datapoint_code).first()
                     if not datapoint:
                         raise MQTTException(
-                            f'Špecifikovaný datapoint nebol nájdený: {key}',
+                            f'Špecifikovaný datapoint nebol nájdený: {datapoint_code}',
                             status_code=mqtt_status.MQTT_ERR_NOT_FOUND
                         )
                     Measurement(device_datapoint=datapoint, value=datapoint_value).create()
