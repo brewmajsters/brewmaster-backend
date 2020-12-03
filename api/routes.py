@@ -5,7 +5,6 @@ from flask import Blueprint, request
 from werkzeug.datastructures import ImmutableMultiDict
 from api import http_status
 from api.errors import ApiException, ValidationException
-from api.forms.device_datapoint_put import DeviceDatapointPutForm
 from api.forms.module_set_config import ModuleSetConfigForm
 from api.forms.module_set_value import ModuleSetValueForm
 from core.models import (
@@ -16,10 +15,10 @@ from core.models import (
     Protocol,
     Device,
     ModuleDeviceType,
-    Measurement
 )
 from mqtt.client import mqtt_client
 from mqtt.errors import MQTTException
+from web_socket.events import socketio
 
 blueprint = Blueprint('blueprint', __name__, template_folder='templates', static_folder='static')
 
@@ -169,9 +168,9 @@ def set_device_datapoint(datapoint_id):
 
     if 'value' in json_data and datapoint.writable:
         value = json_data.get('value')
+        sequence_number = randint(0, 65535)
 
         if not datapoint.virtual:
-            sequence_number = randint(0, 65535)
             request_data = {
                 'device_id': str(datapoint.device.id),
                 'datapoint': datapoint.code,
@@ -189,6 +188,21 @@ def set_device_datapoint(datapoint_id):
                 raise ApiException(e.message, status_code=http_status.HTTP_400_BAD_REQUEST, previous=e)
 
             del json_data['value']
+        else:
+            datapoint.update({'value': value})
+            response = {
+                "module_mac": datapoint.device.module.mac,
+                "sequence_number": sequence_number,
+                "result": "OK",
+            }
+            socketio.emit(str(datapoint.device.module.id), {
+                'module_mac': datapoint.device.module.mac,
+                'values': {
+                    str(datapoint.device.id): {
+                        datapoint.code: value
+                    }
+                }
+            }, namespace='/web_socket')
 
     elif 'value' in json_data and not datapoint.writable:
         raise ApiException('Specified value for non-writable datapoint.', status_code=http_status.HTTP_400_BAD_REQUEST)

@@ -4,7 +4,11 @@ import os
 import time
 import eventlet
 import paho.mqtt.client as mqtt
-from core.models import Module, ModuleNotification, Measurement, DeviceDatapoint
+from core.models import Measurement, DeviceDatapoint
+
+from api import http_status
+from api.errors import ApiException
+from core.models import Module, ModuleNotification
 from mqtt import mqtt_status
 from mqtt.errors import MQTTException
 
@@ -62,6 +66,27 @@ class MqttClient(object):
                 'blocked': False,
                 'message': None
             })
+
+        for module in modules:
+            devices = module.devices.all()
+            request = {}
+
+            for device in devices:
+                request.update({
+                    str(device.id): {
+                        'address': device.address,
+                        'poll_rate': device.poll_rate
+                    }
+                })
+
+            try:
+                response = mqtt_client.send_message(
+                    module.mac,
+                    'SET_CONFIG',
+                    json.dumps(request)
+                )
+            except MQTTException as e:
+                raise ApiException(e.message, status_code=http_status.HTTP_400_BAD_REQUEST, previous=e)
 
     def _handle_periodical_value_reports(self, data):
         with self.app.app_context():
