@@ -180,9 +180,9 @@ def set_device_datapoint(datapoint_id):
 
             try:
                 response = mqtt_client.send_message(
-                    datapoint.device.module.mac,
-                    'SET_VALUE',
-                    json.dumps(request_data)
+                    topic='SET_VALUE',
+                    message=json.dumps(request_data),
+                    mac=datapoint.device.module.mac
                 )
             except MQTTException as e:
                 raise ApiException(e.message, status_code=http_status.HTTP_400_BAD_REQUEST, previous=e)
@@ -284,7 +284,7 @@ def set_value_module(module_id):
     data['sequence_number'] = randint(100, 999)
 
     try:
-        response = mqtt_client.send_message(module.mac, 'SET_VALUE', json.dumps(data))
+        response = mqtt_client.send_message(topic='SET_VALUE', message=json.dumps(data), mac=module.mac)
     except MQTTException as e:
         raise ApiException(e.message, status_code=http_status.HTTP_400_BAD_REQUEST, previous=e)
 
@@ -319,7 +319,7 @@ def config_module(module_id):
     }
 
     try:
-        response = mqtt_client.send_message(module.mac, 'SET_CONFIG', json.dumps(data))
+        response = mqtt_client.send_message(topic='SET_CONFIG', message=json.dumps(data), mac=module.mac)
     except MQTTException as e:
         raise ApiException(e.message, status_code=http_status.HTTP_400_BAD_REQUEST, previous=e)
 

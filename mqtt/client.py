@@ -67,26 +67,15 @@ class MqttClient(object):
                 'message': None
             })
 
-        for module in modules:
-            devices = module.devices.all()
-            request = {}
-
-            for device in devices:
-                request.update({
-                    str(device.id): {
-                        'address': device.address,
-                        'poll_rate': device.poll_rate
-                    }
+        try:
+            response = mqtt_client.send_message(
+                topic='ALL_MODULES',
+                message=json.dumps({
+                    'request': 'module_discovery'
                 })
-
-            try:
-                response = mqtt_client.send_message(
-                    module.mac,
-                    'SET_CONFIG',
-                    json.dumps(request)
-                )
-            except MQTTException as e:
-                raise ApiException(e.message, status_code=http_status.HTTP_400_BAD_REQUEST, previous=e)
+            )
+        except MQTTException as e:
+            raise ApiException(e.message, status_code=http_status.HTTP_400_BAD_REQUEST, previous=e)
 
     def _handle_periodical_value_reports(self, data):
         with self.app.app_context():
@@ -153,7 +142,28 @@ class MqttClient(object):
         pass
 
     def _handle_module_discovery(self, data):
-        pass
+        module_mac = data.get('module_mac')
+        request = {}
+
+        module = Module.query.filter_by(mac=module_mac).first()
+        devices = module.devices.all()
+
+        for device in devices:
+            request.update({
+                str(device.id): {
+                    'address': device.address,
+                    'poll_rate': device.poll_rate
+                }
+            })
+        try:
+            response = mqtt_client.send_message(
+                topic='SET_CONFIG',
+                message=json.dumps(request),
+                mac=module_mac
+            )
+        except MQTTException as e:
+            raise ApiException(e.message, status_code=http_status.HTTP_400_BAD_REQUEST, previous=e)
+        logging.getLogger('root_logger').info(f'[MQTT]: Successfully configured module {module_mac}.')
 
     def _handle_module_disconnect(self, data):
         pass
@@ -222,7 +232,7 @@ class MqttClient(object):
         module_ack_blocker['message'] = None
         return self.client.publish(topic, message)
 
-    def send_message(self, mac: str, topic: str, message: str):
+    def send_message(self, topic: str, message: str, mac: str = None):
         if topic in self.published_topics:
             topic = f'{mac}/{topic}' if mac else topic
         else:
