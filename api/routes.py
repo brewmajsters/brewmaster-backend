@@ -23,6 +23,13 @@ from mqtt.errors import MQTTException
 
 blueprint = Blueprint('blueprint', __name__, template_folder='templates', static_folder='static')
 
+# reboot
+@blueprint.route('/reboot', methods=['GET'])
+def reboot_system():
+    from os import system
+    system('reboot')
+    return '{}', 200, {'Content-Type': 'application/json'}
+
 # UNIT
 @blueprint.route('/units', methods=['GET'])
 def list_units():
