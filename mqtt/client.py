@@ -227,9 +227,10 @@ class MqttClient(object):
 
     def publish(self, mac, topic, message):
         logging.getLogger('root_logger').info(f'[MQTT]: Published message {message} to topic {topic}.')
-        module_ack_blocker = next(filter(lambda obj: obj.get('module_mac') == mac, self.ack_blocker), None)
-        module_ack_blocker['blocked'] = True
-        module_ack_blocker['message'] = None
+        if mac != None:
+            module_ack_blocker = next(filter(lambda obj: obj.get('module_mac') == mac, self.ack_blocker), None)
+            module_ack_blocker['blocked'] = True
+            module_ack_blocker['message'] = None
         return self.client.publish(topic, message)
 
     def send_message(self, topic: str, message: str, mac: str = None):
@@ -242,6 +243,8 @@ class MqttClient(object):
 
         result = self.publish(mac, topic, message)
         end_time = time.time() + self.timeout
+        if mac == None:
+            return None
 
         if result.rc == mqtt.MQTT_ERR_QUEUE_SIZE:
             raise ValueError('Message is not queued due to ERR_QUEUE_SIZE')
