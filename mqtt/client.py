@@ -4,7 +4,7 @@ import os
 import time
 import eventlet
 import paho.mqtt.client as mqtt
-from core.models import Module, ModuleNotification
+from core.models import Module, ModuleNotification, Measurement, DeviceDatapoint
 from mqtt import mqtt_status
 from mqtt.errors import MQTTException
 
@@ -77,13 +77,22 @@ class MqttClient(object):
                 )
 
             for key, value in values.items():
-                device = module.devices.filter_by(id=key)
+                device = module.devices.filter_by(id=key).first()
 
                 if not device:
                     raise MQTTException(
                         f'Špecifikovaný device nebol nájdený: {key}',
                         status_code=mqtt_status.MQTT_ERR_NOT_FOUND
                     )
+
+                for datapoint_code, datapoint_value in value.items():
+                    datapoint = DeviceDatapoint.query.filter_by(device_id=device.id, code=datapoint_code).first()
+                    if not datapoint:
+                        raise MQTTException(
+                            f'Špecifikovaný datapoint nebol nájdený: {datapoint_code}',
+                            status_code=mqtt_status.MQTT_ERR_NOT_FOUND
+                        )
+                    Measurement(device_datapoint=datapoint, value=datapoint_value).create()
 
                 self.socketio.emit(str(module.id), data, namespace='/web_socket')
                 logging.getLogger('root_logger').info(f'[SocketIO]: Posielaná správa: {data} na webový klient.')
